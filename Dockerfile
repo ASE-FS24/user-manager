@@ -1,27 +1,14 @@
 # Use an OpenJDK 17 Alpine base image
-FROM openjdk:17-alpine
+FROM amazoncorretto:17-alpine-jdk
+
+# Optional: Set the environment variable for the app directory
+ENV APP_HOME=/usr/app
 
 # Set the working directory inside the container
-WORKDIR /usermanager
+WORKDIR $APP_HOME/
 
-# Copy the Maven wrapper and pom.xml to the container
-COPY mvnw .
-COPY .mvn .mvn
-COPY pom.xml .
-
-RUN ./mvnw dependency:go-offline
-
-# Copy the source code into the container
-COPY src src
-
-# Build the application
-RUN ./mvnw package -DskipTests
-
-ARG JAR_FILE=target/usermanager*.jar
-COPY ${JAR_FILE} usermanager.jar
-
-# Expose the port your app runs on
-EXPOSE 8080
+# Copy the compiled JAR into the image
+COPY ./target/usermanager-0.0.1-SNAPSHOT.jar $APP_HOME/app.jar
 
 # Command to run the application
 CMD ["java", "-jar", "app.jar"]
