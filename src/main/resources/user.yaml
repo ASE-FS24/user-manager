@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
-  title: University Social Network API
-  description: API for managing user profiles in a university social network app.
+  title: Usermanager API
+  description: API for managing user profiles in a NexusNet social network app.
   version: 1.0.0
 servers:
   - url: 'https://api.universitysocialnetwork.com/v1'
@@ -15,7 +15,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NewUser'
+              $ref: '#/components/schemas/User'
       responses:
         '201':
           description: User profile created successfully
@@ -207,7 +207,3 @@ components:
           type: string
           format: date
           nullable: true
-
-    NewUser:
-      allOf:
-        - $ref: '#/components/schemas/User'
