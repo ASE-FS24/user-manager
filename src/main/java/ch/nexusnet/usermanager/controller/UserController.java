@@ -1,14 +1,13 @@
 package ch.nexusnet.usermanager.controller;
 
 import ch.nexusnet.usermanager.service.UserService;
+import ch.nexusnet.usermanager.service.exceptions.UserNotFoundException;
 import lombok.AllArgsConstructor;
 import org.openapitools.api.UsersApi;
 import org.openapitools.model.UpdateUser;
 import org.openapitools.model.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
@@ -20,18 +19,11 @@ public class UserController implements UsersApi {
 
     private final UserService userService;
 
-    @RequestMapping(
-            method = RequestMethod.GET,
-            value = "/users/test/"
-    )
-    public ResponseEntity<String> testEndpoint() {
-        return ResponseEntity.ok("HELLO WORLD");
-    }
-
     @Override
     public ResponseEntity<User> createUser(User newUser) {
         User user = userService.createUser(newUser);
-        return ResponseEntity.created(URI.create("/users/" + user.getId())).build();
+        URI location = URI.create("/users/" + user.getId());
+        return ResponseEntity.created(location).body(user);
     }
 
     @Override
@@ -41,7 +33,13 @@ public class UserController implements UsersApi {
 
     @Override
     public ResponseEntity<User> getUserById(String userId) {
-        return UsersApi.super.getUserById(userId);
+        User user;
+        try {
+            user = userService.getUserByUserId(userId);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok().body(user);
     }
 
     @Override

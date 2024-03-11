@@ -4,7 +4,7 @@ info:
   description: API for managing user profiles in a NexusNet social network app.
   version: 1.0.0
 servers:
-  - url: 'https://api.universitysocialnetwork.com/v1'
+  - url: 'https://api.nexusnet.ch/v1'
 paths:
   /users:
     post:
@@ -143,10 +143,10 @@ components:
     User:
       type: object
       required:
+        - id
         - firstName
         - lastName
         - username
-        - university
       properties:
         id:
           type: string
@@ -158,33 +158,23 @@ components:
           type: string
         username:
           type: string
-        motto:
-          type: string
-          nullable: true
         university:
           type: string
         bio:
           type: string
-          nullable: true
         resume:
           type: string
           format: binary
-          nullable: true
         degreeProgram:
           type: string
-          nullable: true
         birthday:
           type: string
           format: date
-          nullable: true
-        followedUsers:
-          type: array
-          items:
-            type: string
-          nullable: true
 
     UpdateUser:
       type: object
+      required:
+        - id
       properties:
         firstName:
           type: string
@@ -192,18 +182,12 @@ components:
           type: string
         username:
           type: string
-        motto:
-          type: string
-          nullable: true
         university:
           type: string
         bio:
           type: string
-          nullable: true
         degreeProgram:
           type: string
-          nullable: true
         birthday:
           type: string
           format: date
-          nullable: true
