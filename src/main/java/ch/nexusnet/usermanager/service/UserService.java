@@ -4,8 +4,10 @@ import ch.nexusnet.usermanager.aws.dynamodb.model.mapper.UserInfoToUserMapper;
 import ch.nexusnet.usermanager.aws.dynamodb.model.mapper.UserToUserInfoMapper;
 import ch.nexusnet.usermanager.aws.dynamodb.model.table.UserInfo;
 import ch.nexusnet.usermanager.aws.dynamodb.repositories.UserInfoRepository;
+import ch.nexusnet.usermanager.service.exceptions.UserAlreadyExistsException;
 import ch.nexusnet.usermanager.service.exceptions.UserNotFoundException;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.openapitools.model.User;
 import org.springframework.stereotype.Service;
 
@@ -14,21 +16,24 @@ import java.util.UUID;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class UserService {
 
     private final UserInfoRepository userInfoRepository;
 
-    public User createUser(User newUser) {
+    public User createUser(User newUser) throws UserAlreadyExistsException {
         if (newUser.getId() == null) {
             newUser.setId(UUID.randomUUID());
         }
 
-        Optional<UserInfo> newUserInfo = findUserById(newUser.getId().toString());
-        if (newUserInfo.isEmpty()) {
+        Optional<UserInfo> userInfo = findUserById(newUser.getId().toString());
+        if (userInfo.isEmpty()) {
             UserInfo createdUserInfo = saveUserToDB(newUser);
             return mapUserInfoToUser(createdUserInfo);
         }
-        return mapUserInfoToUser(newUserInfo.get());
+        String userInformationMessage = "User with user id " + userInfo.get().getId() + " already exists.";
+        log.info(userInformationMessage);
+        throw new UserAlreadyExistsException(userInformationMessage);
     }
 
     public User getUserByUserId(String userId) throws UserNotFoundException {
@@ -36,7 +41,9 @@ public class UserService {
         if (userInfo.isPresent()) {
             return mapUserInfoToUser(userInfo.get());
         }
-        throw new UserNotFoundException("UserNotFound");
+        String userInformationMessage = "User with user id " + userId + " was not found.";
+        log.info(userInformationMessage);
+        throw new UserNotFoundException(userInformationMessage);
     }
 
     private Optional<UserInfo> findUserById(String userId) {

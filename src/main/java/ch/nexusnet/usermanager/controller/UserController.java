@@ -1,6 +1,7 @@
 package ch.nexusnet.usermanager.controller;
 
 import ch.nexusnet.usermanager.service.UserService;
+import ch.nexusnet.usermanager.service.exceptions.UserAlreadyExistsException;
 import ch.nexusnet.usermanager.service.exceptions.UserNotFoundException;
 import lombok.AllArgsConstructor;
 import org.openapitools.api.UsersApi;
@@ -21,9 +22,14 @@ public class UserController implements UsersApi {
 
     @Override
     public ResponseEntity<User> createUser(User newUser) {
-        User user = userService.createUser(newUser);
-        URI location = URI.create("/users/" + user.getId());
-        return ResponseEntity.created(location).body(user);
+        User user;
+        try {
+            user = userService.createUser(newUser);
+            URI location = URI.create("/users/" + user.getId());
+            return ResponseEntity.created(location).body(user);
+        } catch (UserAlreadyExistsException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @Override
