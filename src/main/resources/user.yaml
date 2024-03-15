@@ -1,0 +1,213 @@
+openapi: 3.0.0
+info:
+  title: Usermanager API
+  description: API for managing user profiles in a NexusNet social network app.
+  version: 1.0.0
+servers:
+  - url: 'https://api.nexusnet.ch/v1'
+paths:
+  /users:
+    post:
+      summary: Create a new user profile
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: User profile created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Bad request
+
+  /users/id/{userId}:
+    get:
+      summary: Get a user profile by ID
+      operationId: getUserById
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+
+    put:
+      summary: Update an existing user profile
+      operationId: updateUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUser'
+      responses:
+        '200':
+          description: User profile updated successfully
+        '400':
+          description: Bad request
+        '404':
+          description: User not found
+
+    delete:
+      summary: Delete a user profile
+      operationId: deleteUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: User profile deleted successfully
+        '404':
+          description: User not found
+
+  /users/{userId}/resume:
+    post:
+      summary: Upload user's resume
+      operationId: uploadResume
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                resume:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Resume uploaded successfully
+        '400':
+          description: Bad request
+        '404':
+          description: User not found
+
+  /users/{userId}/profilePicture:
+    post:
+      summary: Upload user's profile picture
+      operationId: uploadProfilePicture
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                profilePicture:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Profile picture uploaded successfully
+        '400':
+          description: Bad request
+        '404':
+          description: User not found
+
+  /users/username/{username}:
+    get:
+      summary: Get a user profile by username
+      operationId: getUserByUsername
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - id
+        - firstName
+        - lastName
+        - username
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        firstName:
+          type: string
+        lastName:
+          type: string
+        username:
+          type: string
+        university:
+          type: string
+        bio:
+          type: string
+        resume:
+          type: string
+          format: binary
+        degreeProgram:
+          type: string
+        birthday:
+          type: string
+          format: date
+
+    UpdateUser:
+      type: object
+      required:
+        - id
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        username:
+          type: string
+        university:
+          type: string
+        bio:
+          type: string
+        degreeProgram:
+          type: string
+        birthday:
+          type: string
+          format: date

@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Example Spring Boot Lambda Application
+
+Globals:
+  Function:
+    Timeout: 20 # Timeout for the Lambda function in seconds
+
+Resources:
+  SpringBootLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: ch.nexusnet.usermanager.aws.LambdaHandler::handleRequest
+      Runtime: java17
+      CodeUri: .
+      MemorySize: 512
+      SnapStart:
+        ApplyOn: "PublishedVersions"
+      AutoPublishAlias: "prod"
+      Policies: AWSLambdaBasicExecutionRole
+      Events:
+        HttpEndpoint:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+
+Outputs:
+  ApiURL:
+    Description: "API Gateway endpoint URL for Prod environment"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
