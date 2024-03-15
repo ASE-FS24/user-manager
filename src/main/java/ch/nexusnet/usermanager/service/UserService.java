@@ -26,12 +26,12 @@ public class UserService {
             newUser.setId(UUID.randomUUID());
         }
 
-        Optional<UserInfo> userInfo = findUserById(newUser.getId().toString());
+        Optional<UserInfo> userInfo = findUserByUsername(newUser.getUsername());
         if (userInfo.isEmpty()) {
             UserInfo createdUserInfo = saveUserToDB(newUser);
             return mapUserInfoToUser(createdUserInfo);
         }
-        String userInformationMessage = "User with user id " + userInfo.get().getId() + " already exists.";
+        String userInformationMessage = "User with username " + userInfo.get().getUsername() + " already exists.";
         log.info(userInformationMessage);
         throw new UserAlreadyExistsException(userInformationMessage);
     }
@@ -46,9 +46,24 @@ public class UserService {
         throw new UserNotFoundException(userInformationMessage);
     }
 
+    public User getUserByUsername(String username) throws UserNotFoundException {
+        Optional<UserInfo> userInfo = findUserByUsername(username);
+        if (userInfo.isPresent()) {
+            return mapUserInfoToUser(userInfo.get());
+        }
+        String userInformationMessage = "User with username " + username + " was not found.";
+        log.info(userInformationMessage);
+        throw new UserNotFoundException(userInformationMessage);
+    }
+
     private Optional<UserInfo> findUserById(String userId) {
         return userInfoRepository.findById(userId);
     }
+
+    private Optional<UserInfo> findUserByUsername(String username) {
+        return userInfoRepository.findUserInfoByUsername(username);
+    }
+
     private UserInfo saveUserToDB(User user) {
         return userInfoRepository.save(mapUserToUserInfo(user));
     }

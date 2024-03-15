@@ -62,4 +62,15 @@ public class UserController implements UsersApi {
     public ResponseEntity<Void> uploadResume(String userId, MultipartFile resume) {
         return UsersApi.super.uploadResume(userId, resume);
     }
+
+    @Override
+    public ResponseEntity<User> getUserByUsername(String username) {
+        User user;
+        try {
+            user = userService.getUserByUsername(username);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok().body(user);
+    }
 }

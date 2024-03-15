@@ -26,7 +26,7 @@ paths:
         '400':
           description: Bad request
 
-  /users/{userId}:
+  /users/id/{userId}:
     get:
       summary: Get a user profile by ID
       operationId: getUserById
@@ -135,6 +135,26 @@ paths:
           description: Profile picture uploaded successfully
         '400':
           description: Bad request
+        '404':
+          description: User not found
+
+  /users/username/{username}:
+    get:
+      summary: Get a user profile by username
+      operationId: getUserByUsername
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
         '404':
           description: User not found
 
