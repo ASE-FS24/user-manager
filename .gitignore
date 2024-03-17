@@ -1,16 +1,9 @@
 # Compiled class file
 *.class
 
-# Log file
+### Java ###
+*.class
 *.log
-
-# BlueJ files
-*.ctxt
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Package Files #
 *.jar
 *.war
 *.nar
@@ -18,7 +11,91 @@
 *.zip
 *.tar.gz
 *.rar
-
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
-replay_pid*
+
+### Maven ###
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+### Gradle ###
+.gradle
+/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+### Spring Boot ###
+spring-boot-admin-server-ui/node/
+spring-boot-admin-server-ui/node_modules/
+spring-boot-admin-server-ui/dist/
+spring-boot-admin-server-ui/target/
+*.log
+*.sql
+*.jks
+*.p12
+*.csv
+*.dat
+*.tmp
+hs_err_pid*
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+*.idea/modules.xml
+*.idea/*.iml
+*.idea/*.xml
+.idea/libraries/
+.idea/artifacts/
+
+### Eclipse ###
+.classpath
+.project
+.settings/
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.loadpath
+.recommenders
+
+### VS Code ###
+.vscode/
+
+### NetBeans ###
+/nbproject/private/
+/build/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### OS ###
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+### Other common ignore patterns ###
+*~
+*.lock
+*.DS_Store
+*.swp
+*.log
+temp/
+tmp/
+
