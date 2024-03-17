@@ -18,7 +18,7 @@ RUN pip3 install --upgrade awscli
 RUN pip3 install awscli-local
 
 # Install LocalStack using pip3
-RUN pip3 install localstack
+# RUN pip3 install localstack
 
 # Optional: Set the environment variable for the app directory
 ENV APP_HOME=/usr/app
