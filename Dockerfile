@@ -8,7 +8,7 @@ ENV APP_HOME=/usr/app
 WORKDIR $APP_HOME/
 
 # Copy the compiled JAR into the image
-COPY ./target/usermanager-0.0.1-SNAPSHOT.jar $APP_HOME/app.jar
+COPY ./target/usermanager.jar $APP_HOME/app.jar
 
 # Command to run the application
 CMD ["java", "-jar", "app.jar"]
