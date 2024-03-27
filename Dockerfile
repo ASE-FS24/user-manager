@@ -26,8 +26,8 @@ ENV APP_HOME=/usr/app
 # Set the working directory inside the container
 WORKDIR $APP_HOME/
 
-# Copy the compiled JAR into the image <- change this based on your folder
-COPY ./user-manager/target/usermanager-0.0.1-SNAPSHOT.jar $APP_HOME/app.jar
+# Copy the compiled JAR into the image
+COPY ./target/usermanager.jar $APP_HOME/app.jar
 
 # Expose port 8080 (if your application requires it)
 EXPOSE 8080
