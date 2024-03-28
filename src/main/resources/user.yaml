@@ -193,8 +193,6 @@ components:
 
     UpdateUser:
       type: object
-      required:
-        - id
       properties:
         firstName:
           type: string

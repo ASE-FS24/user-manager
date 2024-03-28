@@ -34,23 +34,34 @@ public class UserController implements UsersApi {
 
     @Override
     public ResponseEntity<Void> deleteUser(String userId) {
-        return UsersApi.super.deleteUser(userId);
+        try {
+            userService.deleteUser(userId);
+            return ResponseEntity.ok().build();
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
+
 
     @Override
     public ResponseEntity<User> getUserById(String userId) {
         User user;
         try {
             user = userService.getUserByUserId(userId);
+            return ResponseEntity.ok().body(user);
         } catch (UserNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok().body(user);
     }
 
     @Override
     public ResponseEntity<Void> updateUser(String userId, UpdateUser updateUser) {
-        return UsersApi.super.updateUser(userId, updateUser);
+        try {
+            userService.updateUser(userId, updateUser);
+            return ResponseEntity.ok().build();
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Override
@@ -68,9 +79,9 @@ public class UserController implements UsersApi {
         User user;
         try {
             user = userService.getUserByUsername(username);
+            return ResponseEntity.ok().body(user);
         } catch (UserNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok().body(user);
     }
 }

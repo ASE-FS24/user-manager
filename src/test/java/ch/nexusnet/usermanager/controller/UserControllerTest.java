@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.openapitools.model.UpdateUser;
 import org.openapitools.model.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +17,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class UserControllerTest {
 
@@ -82,6 +83,60 @@ class UserControllerTest {
 
         // act
         ResponseEntity<User> response = userController.getUserById(wrongUserId);
+
+        // assert
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    void deleteUser_expectOk() {
+        // arrange
+        String userId = UUID.randomUUID().toString();
+        doNothing().when(userService).deleteUser(userId);
+
+        // act
+        ResponseEntity<Void> response = userController.deleteUser(userId);
+
+        // assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    void whenUserToDeleteDoesNotExist_expectNotFound() {
+        // arrange
+        String userId = UUID.randomUUID().toString();
+        doThrow(new UserNotFoundException("User with id " + userId + "was not found")).when(userService).deleteUser(userId);
+
+        // act
+        ResponseEntity<Void> response = userController.deleteUser(userId);
+
+        // assert
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    void updateUser_expectOk() {
+        // arrange
+        UpdateUser updateUser = new UpdateUser();
+        String userId = UUID.randomUUID().toString();
+        doNothing().when(userService).updateUser(userId, updateUser);
+
+        // act
+        ResponseEntity<Void> response = userController.updateUser(userId, updateUser);
+
+        // assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    void whenUserToUpdateDoesNotExist_expectNotFound() {
+        // arrange
+        UpdateUser updateUser = new UpdateUser();
+        String userId = UUID.randomUUID().toString();
+        doThrow(new UserNotFoundException("User with id " + userId + "was not found")).when(userService).updateUser(userId, updateUser);
+
+        // act
+        ResponseEntity<Void> response = userController.updateUser(userId, updateUser);
 
         // assert
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
