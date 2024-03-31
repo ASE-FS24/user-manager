@@ -19,6 +19,8 @@ import org.openapitools.model.UpdateUser;
 import org.openapitools.model.User;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -45,7 +47,7 @@ class UserServiceTest {
     @MethodSource("getUsers")
     void createNewUser_expectSuccess(User testUser) {
         // arrange
-        when(userInfoRepositoryMock.findUserInfoByUsername(any(String.class))).thenReturn(Optional.empty());
+        when(userInfoRepositoryMock.findUserInfoByUsername(any(String.class))).thenReturn(new ArrayList<>());
         when(userInfoRepositoryMock.save(any(UserInfo.class))).thenReturn(UserToUserInfoMapper.map(getUserWithId()));
 
         // act
@@ -59,7 +61,7 @@ class UserServiceTest {
     @MethodSource("getUsers")
     void createNewUser_expectFailure(User testUser) {
         // arrange
-        when(userInfoRepositoryMock.findUserInfoByUsername(any(String.class))).thenReturn(Optional.of(UserToUserInfoMapper.map(testUser)));
+        when(userInfoRepositoryMock.findUserInfoByUsername(any(String.class))).thenReturn(List.of((UserToUserInfoMapper.map(testUser))));
 
         // act & assert
         assertThrows(UserAlreadyExistsException.class, () -> userService.createUser(testUser));
@@ -91,7 +93,7 @@ class UserServiceTest {
     void getUserByUsername_expectSuccess() {
         // arrange
         User testUser = getUserWithId();
-        when(userInfoRepositoryMock.findUserInfoByUsername(any(String.class))).thenReturn(Optional.of(UserToUserInfoMapper.map(testUser)));
+        when(userInfoRepositoryMock.findUserInfoByUsername(any(String.class))).thenReturn(List.of((UserToUserInfoMapper.map(testUser))));
 
         // act
         User foundUser = userService.getUserByUsername(testUser.getUsername());
@@ -103,7 +105,7 @@ class UserServiceTest {
     @Test
     void getUserByUsername_expectFailure() {
         // arrange
-        when(userInfoRepositoryMock.findUserInfoByUsername(any(String.class))).thenReturn(Optional.empty());
+        // when(userInfoRepositoryMock.findUserInfoByUsername(any(String.class))).thenReturn(Optional.empty());
 
         // act & assert
         assertThrows(UserNotFoundException.class, () -> userService.getUserByUsername("nonexistent"));

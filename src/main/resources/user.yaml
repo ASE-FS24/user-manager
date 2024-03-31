@@ -112,6 +112,27 @@ paths:
           description: User not found
 
   /users/{userId}/profilePicture:
+    get:
+      summary: Get user's profile picture
+      operationId: getProfilePicture
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Profile picture retrieved successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "https://example-bucket.s3.amazonaws.com/user-files/12345/profilePicture/picture.jpg?AWSAccessKeyId=AKIAIOSFODNN7EXAMPLE&Expires=1318622958&Signature=mcw%2BJCvY7p9bqYlJpYBG9Pd%2B3JI%3D"
+        '400':
+          description: Bad request
+        '404':
+          description: Profile picture not found
     post:
       summary: Upload user's profile picture
       operationId: uploadProfilePicture
@@ -131,12 +152,19 @@ paths:
                   type: string
                   format: binary
       responses:
-        '200':
+        '201':
           description: Profile picture uploaded successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "https://example-bucket.s3.amazonaws.com/user-files/12345/profilePicture/picture.jpg?AWSAccessKeyId=AKIAIOSFODNN7EXAMPLE&Expires=1318622958&Signature=mcw%2BJCvY7p9bqYlJpYBG9Pd%2B3JI%3D"
         '400':
           description: Bad request
         '404':
           description: User not found
+        '500':
+          description: Service not available
 
   /users/username/{username}:
     get:

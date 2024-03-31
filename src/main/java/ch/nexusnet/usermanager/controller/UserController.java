@@ -1,5 +1,6 @@
 package ch.nexusnet.usermanager.controller;
 
+import ch.nexusnet.usermanager.aws.s3.exceptions.UnsupportedFileTypeException;
 import ch.nexusnet.usermanager.service.UserService;
 import ch.nexusnet.usermanager.service.exceptions.UserAlreadyExistsException;
 import ch.nexusnet.usermanager.service.exceptions.UserNotFoundException;
@@ -11,7 +12,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 
 @Controller
@@ -65,8 +69,31 @@ public class UserController implements UsersApi {
     }
 
     @Override
-    public ResponseEntity<Void> uploadProfilePicture(String userId, MultipartFile profilePicture) {
-        return UsersApi.super.uploadProfilePicture(userId, profilePicture);
+    public ResponseEntity<String> uploadProfilePicture(String userId, MultipartFile profilePicture) {
+        try {
+            URL location = userService.uploadProfilePicture(userId, profilePicture);
+            return ResponseEntity.created(location.toURI()).build();
+
+        } catch (IOException | URISyntaxException e) {
+            return ResponseEntity.internalServerError().body("Service not available.");
+        } catch (UnsupportedFileTypeException e) {
+            return ResponseEntity.badRequest().body("Unsupported file type.");
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Override
+    public ResponseEntity<String> getProfilePicture(String userId) {
+        try {
+            URL location = userService.getProfilePicture(userId);
+            return ResponseEntity.ok().body(location.toURI().toString());
+
+        } catch (URISyntaxException e) {
+            return ResponseEntity.internalServerError().body("Service not available.");
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Override

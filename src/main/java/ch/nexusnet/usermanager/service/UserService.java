@@ -4,6 +4,8 @@ import ch.nexusnet.usermanager.aws.dynamodb.model.mapper.UserInfoToUserMapper;
 import ch.nexusnet.usermanager.aws.dynamodb.model.mapper.UserToUserInfoMapper;
 import ch.nexusnet.usermanager.aws.dynamodb.model.table.UserInfo;
 import ch.nexusnet.usermanager.aws.dynamodb.repositories.UserInfoRepository;
+import ch.nexusnet.usermanager.aws.s3.client.S3Client;
+import ch.nexusnet.usermanager.aws.s3.exceptions.UnsupportedFileTypeException;
 import ch.nexusnet.usermanager.service.exceptions.UserAlreadyExistsException;
 import ch.nexusnet.usermanager.service.exceptions.UserNotFoundException;
 import lombok.AllArgsConstructor;
@@ -11,7 +13,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.openapitools.model.UpdateUser;
 import org.openapitools.model.User;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.net.URL;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,6 +27,7 @@ import java.util.UUID;
 public class UserService {
 
     private final UserInfoRepository userInfoRepository;
+    private final S3Client s3Client;
 
     public User createUser(User newUser) throws UserAlreadyExistsException {
         if (newUser.getId() == null) {
@@ -70,12 +77,18 @@ public class UserService {
     }
 
     public void deleteUser(String userId) throws UserNotFoundException {
-        if (! userInfoRepository.existsById(userId)) {
-            String userInformationMessage = getUserNotFoundByIdMessage(userId);
-            log.info(userInformationMessage);
-            throw new UserNotFoundException(userInformationMessage);
-        }
+        throwExeptionIfUserDoesNotExist(userId);
         userInfoRepository.deleteById(userId);
+    }
+
+    public URL uploadProfilePicture(String userId, MultipartFile profilePicture) throws IOException, UnsupportedFileTypeException, UserNotFoundException {
+        throwExeptionIfUserDoesNotExist(userId);
+        return s3Client.uploadFileToS3(userId, profilePicture);
+    }
+
+    public URL getProfilePicture(String userId) throws UserNotFoundException {
+        throwExeptionIfUserDoesNotExist(userId);
+        return s3Client.getFileFromS3(userId);
     }
 
     private Optional<UserInfo> findUserById(String userId) {
@@ -83,7 +96,9 @@ public class UserService {
     }
 
     private Optional<UserInfo> findUserByUsername(String username) {
-        return userInfoRepository.findUserInfoByUsername(username);
+        List<UserInfo> userInfos = userInfoRepository.findUserInfoByUsername(username);
+        log.info("found following users " + userInfos.toString());
+        return userInfos.stream().findAny();
     }
 
     private UserInfo saveUserToDB(User user) {
@@ -104,6 +119,14 @@ public class UserService {
 
     private String getUserNotFoundByUserNameMessage(String username) {
         return "User with username " + username + " was not found.";
+    }
+
+    private void throwExeptionIfUserDoesNotExist(String userId) throws UserNotFoundException {
+        if (! userInfoRepository.existsById(userId)) {
+            String userInformationMessage = getUserNotFoundByIdMessage(userId);
+            log.info(userInformationMessage);
+            throw new UserNotFoundException(userInformationMessage);
+        }
     }
 
     private void updateUserInfo(UpdateUser updateUser, UserInfo userInfo) {
