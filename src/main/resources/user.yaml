@@ -85,6 +85,27 @@ paths:
           description: User not found
 
   /users/{userId}/resume:
+    get:
+      summary: Get user's resume
+      operationId: getResume
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User's resume retrieved successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "https://example-bucket.s3.amazonaws.com/user-files/12345/resume.pdf?AWSAccessKeyId=AKIAIOSFODNN7EXAMPLE&Expires=1318622958&Signature=mcw%2BJCvY7p9bqYlJpYBG9Pd%2B3JI%3D"
+        '400':
+          description: Bad request
+        '404':
+          description: Profile picture not found
     post:
       summary: Upload user's resume
       operationId: uploadResume
@@ -104,8 +125,13 @@ paths:
                   type: string
                   format: binary
       responses:
-        '200':
+        '201':
           description: Resume uploaded successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "https://example-bucket.s3.amazonaws.com/user-files/12345/resume.pdf?AWSAccessKeyId=AKIAIOSFODNN7EXAMPLE&Expires=1318622958&Signature=mcw%2BJCvY7p9bqYlJpYBG9Pd%2B3JI%3D"
         '400':
           description: Bad request
         '404':

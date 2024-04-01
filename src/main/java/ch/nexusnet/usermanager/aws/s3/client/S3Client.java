@@ -21,12 +21,13 @@ import java.util.Date;
 @RequiredArgsConstructor
 @Slf4j
 public class S3Client {
-    @Value("${usermanager.aws.s3.bucket}")
-    private String bucketName;
-
-    private final S3ClientConfiguration s3ClientConfiguration;
     private static final String USER_FILE_PATH = "user-files/";
     private static final String PROFILE_PICTURE = "profile-picture.jpeg";
+    private static final String RESUME = "resume.pdf";
+
+    private final S3ClientConfiguration s3ClientConfiguration;
+    @Value("${usermanager.aws.s3.bucket}")
+    private String bucketName;
 
     public URL uploadFileToS3(String userId , MultipartFile multipartFile) throws IOException, UnsupportedFileTypeException {
         AmazonS3 s3 = getS3Client();
@@ -35,7 +36,7 @@ public class S3Client {
         if (isFileAProfilePicture(multipartFile)) {
             keyName = USER_FILE_PATH + userId + PROFILE_PICTURE;
         } else {
-            keyName = USER_FILE_PATH + userId + "resume.pdf";
+            keyName = USER_FILE_PATH + userId + RESUME;
         }
 
         ObjectMetadata metadata = new ObjectMetadata();
@@ -49,18 +50,18 @@ public class S3Client {
         return s3.getUrl(bucketName, keyName);
     }
 
-    public URL getFileFromS3(String userid) {
+    public URL getProfilePictureFromS3(String userid) {
         AmazonS3 s3 = getS3Client();
-
         Date expiration = getExpirationDateForURL();
-
         String keyName = USER_FILE_PATH + userid + PROFILE_PICTURE;
-        // Generate the pre-signed URL
-        GeneratePresignedUrlRequest generatePresignedUrlRequest =
-                new GeneratePresignedUrlRequest(bucketName, keyName)
-                        .withMethod(HttpMethod.GET)
-                        .withExpiration(expiration);
-        return s3.generatePresignedUrl(generatePresignedUrlRequest);
+        return generatePresignedURL(keyName, expiration, s3);
+    }
+
+    public URL getResumeFromS3(String userid) {
+        AmazonS3 s3 = getS3Client();
+        Date expiration = getExpirationDateForURL();
+        String keyName = USER_FILE_PATH + userid + RESUME;
+        return generatePresignedURL(keyName, expiration, s3);
     }
 
     private AmazonS3 getS3Client() {
@@ -84,12 +85,21 @@ public class S3Client {
         }
     }
 
-    private static Date getExpirationDateForURL() {
+    private Date getExpirationDateForURL() {
         // Set expiration time for the pre-signed URL
         Date expiration = new Date();
         long expTimeMillis = expiration.getTime();
         expTimeMillis += 1000 * 60 * 60; // 1 hour
         expiration.setTime(expTimeMillis);
         return expiration;
+    }
+
+
+    private URL generatePresignedURL(String keyName, Date expiration, AmazonS3 s3) {
+        GeneratePresignedUrlRequest generatePresignedUrlRequest =
+                new GeneratePresignedUrlRequest(bucketName, keyName)
+                        .withMethod(HttpMethod.GET)
+                        .withExpiration(expiration);
+        return s3.generatePresignedUrl(generatePresignedUrlRequest);
     }
 }

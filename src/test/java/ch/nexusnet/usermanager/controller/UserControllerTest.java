@@ -159,7 +159,7 @@ class UserControllerTest {
         String userId = UUID.randomUUID().toString();
         MultipartFile multipartFile = mock(MultipartFile.class);
         URL url = new URI("http://api.nexusnet.ch").toURL();
-        when(userService.uploadProfilePicture(userId, multipartFile)).thenReturn(url);
+        when(userService.uploadFile(userId, multipartFile)).thenReturn(url);
 
         // act
         ResponseEntity<String> response = userController.uploadProfilePicture(userId, multipartFile);
@@ -174,7 +174,7 @@ class UserControllerTest {
         String userId = UUID.randomUUID().toString();
         MultipartFile multipartFile = mock(MultipartFile.class);
         doThrow(new UnsupportedFileTypeException("unsupportedFileType")).
-                when(userService).uploadProfilePicture(userId, multipartFile);
+                when(userService).uploadFile(userId, multipartFile);
 
         // act
         ResponseEntity<String> response = userController.uploadProfilePicture(userId, multipartFile);
@@ -189,7 +189,7 @@ class UserControllerTest {
         String userId = UUID.randomUUID().toString();
         MultipartFile multipartFile = mock(MultipartFile.class);
         doThrow(new UserNotFoundException("User not found")).
-                when(userService).uploadProfilePicture(userId, multipartFile);
+                when(userService).uploadFile(userId, multipartFile);
 
         // act
         ResponseEntity<String> response = userController.uploadProfilePicture(userId, multipartFile);
@@ -206,12 +206,12 @@ class UserControllerTest {
         MultipartFile multipartFile = mock(MultipartFile.class);
         if (IOException.class.equals(exception.getClass())) {
             doThrow(exception).
-                    when(userService).uploadProfilePicture(userId, multipartFile);
+                    when(userService).uploadFile(userId, multipartFile);
         }
 
         if (URISyntaxException.class.equals(exception.getClass())) {
             URL url = mock(URL.class);
-            when(userService.uploadProfilePicture(userId, multipartFile)).thenReturn(url);
+            when(userService.uploadFile(userId, multipartFile)).thenReturn(url);
             when(url.toURI()).thenThrow(new URISyntaxException("wrong uri", "wrong uri"));
         }
 

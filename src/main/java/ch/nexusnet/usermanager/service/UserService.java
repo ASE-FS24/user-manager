@@ -81,14 +81,19 @@ public class UserService {
         userInfoRepository.deleteById(userId);
     }
 
-    public URL uploadProfilePicture(String userId, MultipartFile profilePicture) throws IOException, UnsupportedFileTypeException, UserNotFoundException {
+    public URL uploadFile(String userId, MultipartFile  multipartFile) throws IOException, UnsupportedFileTypeException, UserNotFoundException {
         throwExeptionIfUserDoesNotExist(userId);
-        return s3Client.uploadFileToS3(userId, profilePicture);
+        return s3Client.uploadFileToS3(userId, multipartFile);
     }
 
     public URL getProfilePicture(String userId) throws UserNotFoundException {
         throwExeptionIfUserDoesNotExist(userId);
-        return s3Client.getFileFromS3(userId);
+        return s3Client.getProfilePictureFromS3(userId);
+    }
+
+    public URL getResume(String userId) throws UserNotFoundException {
+        throwExeptionIfUserDoesNotExist(userId);
+        return s3Client.getResumeFromS3(userId);
     }
 
     private Optional<UserInfo> findUserById(String userId) {

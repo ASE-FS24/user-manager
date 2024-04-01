@@ -4,6 +4,7 @@ import ch.nexusnet.usermanager.aws.s3.exceptions.UnsupportedFileTypeException;
 import ch.nexusnet.usermanager.service.UserService;
 import ch.nexusnet.usermanager.service.exceptions.UserAlreadyExistsException;
 import ch.nexusnet.usermanager.service.exceptions.UserNotFoundException;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import org.openapitools.api.UsersApi;
 import org.openapitools.model.UpdateUser;
@@ -23,6 +24,7 @@ import java.net.URL;
 public class UserController implements UsersApi {
 
     private final UserService userService;
+    private static final String SERVICE_NOT_AVAILABLE = "Service not available.";
 
     @Override
     public ResponseEntity<User> createUser(User newUser) {
@@ -70,17 +72,7 @@ public class UserController implements UsersApi {
 
     @Override
     public ResponseEntity<String> uploadProfilePicture(String userId, MultipartFile profilePicture) {
-        try {
-            URL location = userService.uploadProfilePicture(userId, profilePicture);
-            return ResponseEntity.created(location.toURI()).build();
-
-        } catch (IOException | URISyntaxException e) {
-            return ResponseEntity.internalServerError().body("Service not available.");
-        } catch (UnsupportedFileTypeException e) {
-            return ResponseEntity.badRequest().body("Unsupported file type.");
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+        return uploadFileAndRetrieveFileLocation(userId, profilePicture);
     }
 
     @Override
@@ -90,15 +82,28 @@ public class UserController implements UsersApi {
             return ResponseEntity.ok().body(location.toURI().toString());
 
         } catch (URISyntaxException e) {
-            return ResponseEntity.internalServerError().body("Service not available.");
+            return ResponseEntity.internalServerError().body(SERVICE_NOT_AVAILABLE);
         } catch (UserNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
     }
 
     @Override
-    public ResponseEntity<Void> uploadResume(String userId, MultipartFile resume) {
-        return UsersApi.super.uploadResume(userId, resume);
+    public ResponseEntity<String> uploadResume(String userId, MultipartFile resume) {
+        return uploadFileAndRetrieveFileLocation(userId, resume);
+    }
+
+    @Override
+    public ResponseEntity<String> getResume(String userId) {
+        try {
+            URL location = userService.getResume(userId);
+            return ResponseEntity.ok().body(location.toURI().toString());
+
+        } catch (URISyntaxException e) {
+            return ResponseEntity.internalServerError().body(SERVICE_NOT_AVAILABLE);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Override
@@ -107,6 +112,21 @@ public class UserController implements UsersApi {
         try {
             user = userService.getUserByUsername(username);
             return ResponseEntity.ok().body(user);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @NotNull
+    private ResponseEntity<String> uploadFileAndRetrieveFileLocation(String userId, MultipartFile resume) {
+        try {
+            URL location = userService.uploadFile(userId, resume);
+            return ResponseEntity.created(location.toURI()).build();
+
+        } catch (IOException | URISyntaxException e) {
+            return ResponseEntity.internalServerError().body(SERVICE_NOT_AVAILABLE);
+        } catch (UnsupportedFileTypeException e) {
+            return ResponseEntity.badRequest().body("Unsupported file type.");
         } catch (UserNotFoundException e) {
             return ResponseEntity.notFound().build();
         }

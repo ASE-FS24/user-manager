@@ -3,6 +3,7 @@ package ch.nexusnet.usermanager.service;
 import ch.nexusnet.usermanager.aws.dynamodb.model.mapper.UserToUserInfoMapper;
 import ch.nexusnet.usermanager.aws.dynamodb.model.table.UserInfo;
 import ch.nexusnet.usermanager.aws.dynamodb.repositories.UserInfoRepository;
+import ch.nexusnet.usermanager.aws.s3.client.S3Client;
 import ch.nexusnet.usermanager.service.exceptions.UserAlreadyExistsException;
 import ch.nexusnet.usermanager.service.exceptions.UserNotFoundException;
 import org.jetbrains.annotations.NotNull;
@@ -17,7 +18,12 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openapitools.model.UpdateUser;
 import org.openapitools.model.User;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +42,9 @@ class UserServiceTest {
 
     @Mock
     UserInfoRepository userInfoRepositoryMock;
+
+    @Mock
+    S3Client s3ClientMock;
 
 
     @BeforeEach
@@ -83,10 +92,11 @@ class UserServiceTest {
     @Test
     void getUserByUserId_expectFailure() {
         // arrange
+        String userId = UUID.randomUUID().toString();
         when(userInfoRepositoryMock.findById(any(String.class))).thenReturn(Optional.empty());
 
         // act & assert
-        assertThrows(UserNotFoundException.class, () -> userService.getUserByUserId(UUID.randomUUID().toString()));
+        assertThrows(UserNotFoundException.class, () -> userService.getUserByUserId(userId));
     }
 
     @Test
@@ -177,6 +187,83 @@ class UserServiceTest {
 
         // act & assert
         assertThrows(UserNotFoundException.class, () -> userService.deleteUser("nonexistent"));
+    }
+
+    @Test
+    void uploadFile_expectSuccess() throws IOException, URISyntaxException {
+        // arrange
+        MultipartFile file = mock(MultipartFile.class);
+        User testUser = getUserWithId();
+        when(userInfoRepositoryMock.existsById(testUser.getId().toString())).thenReturn(true);
+        when(s3ClientMock.uploadFileToS3(testUser.getId().toString(), file)).thenReturn(new URI("http://example.com").toURL());
+
+        // act
+        userService.uploadFile(testUser.getId().toString(), file);
+
+        // assert
+        verify(userInfoRepositoryMock, times(1)).existsById(testUser.getId().toString());
+    }
+
+    @Test
+    void uploadFileWithNonExistentUser_expectFailure() {
+        // arrange
+        MultipartFile file = mock(MultipartFile.class);
+        User testUser = getUserWithId();
+        String userId = testUser.getId().toString();
+        when(userInfoRepositoryMock.existsById(testUser.getId().toString())).thenReturn(false);
+
+        // act & assert
+        assertThrows(UserNotFoundException.class, () -> userService.uploadFile(userId, file));
+    }
+
+    @Test
+    void getProfilePicture_expectSuccess() throws URISyntaxException, MalformedURLException {
+        // arrange
+        User testUser = getUserWithId();
+        when(userInfoRepositoryMock.existsById(testUser.getId().toString())).thenReturn(true);
+        when(s3ClientMock.getProfilePictureFromS3(testUser.getId().toString())).thenReturn(new URI("http://example.com").toURL());
+
+        // act
+        userService.getProfilePicture(testUser.getId().toString());
+
+        // assert
+        verify(userInfoRepositoryMock, times(1)).existsById(testUser.getId().toString());
+    }
+
+    @Test
+    void getProfilePictureWithNonExistentUser_expectFailure() {
+        // arrange
+        User testUser = getUserWithId();
+        String userId = testUser.getId().toString();
+        when(userInfoRepositoryMock.existsById(testUser.getId().toString())).thenReturn(false);
+
+        // act & assert
+        assertThrows(UserNotFoundException.class, () -> userService.getProfilePicture(userId));
+    }
+
+    @Test
+    void getResume_expectSuccess() throws URISyntaxException, MalformedURLException {
+        // arrange
+        User testUser = getUserWithId();
+        when(userInfoRepositoryMock.existsById(testUser.getId().toString())).thenReturn(true);
+        when(s3ClientMock.getResumeFromS3(testUser.getId().toString())).thenReturn(new URI("http://example.com").toURL());
+
+        // act
+        userService.getResume(testUser.getId().toString());
+
+        // assert
+        verify(userInfoRepositoryMock, times(1)).existsById(testUser.getId().toString());
+    }
+
+    @Test
+    void getResumeWithNonExistentUser_expectFailure() {
+        // arrange
+        User testUser = getUserWithId();
+        String userId = testUser.getId().toString();
+        when(userInfoRepositoryMock.existsById(testUser.getId().toString())).thenReturn(false);
+
+        // act & assert
+        assertThrows(UserNotFoundException.class, () -> userService.getResume(userId));
     }
 
     private static Stream<Arguments> getUsers() {
