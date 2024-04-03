@@ -43,10 +43,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(classes = UsermanagerApplication.class)
 @WebAppConfiguration
 @ActiveProfiles("local")
-@TestPropertySource(properties = {
-        "amazon.dynamodb.endpoint=http://localhost:8000/",
-        "amazon.aws.accesskey=test1",
-        "amazon.aws.secretkey=test231" })
 public class FollowIntegrationTest {
     private DynamoDBMapper dynamoDBMapper;
 
