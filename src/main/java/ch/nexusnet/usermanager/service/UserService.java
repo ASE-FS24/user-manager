@@ -39,19 +39,14 @@ public class UserService {
             UserInfo createdUserInfo = saveUserToDB(newUser);
             return mapUserInfoToUser(createdUserInfo);
         }
-        String userInformationMessage = getUserNotFoundByUserNameMessage(userInfo.get().getUsername());
+        String userInformationMessage = getUserAlreadyExistsMessage(userInfo.get().getUsername());
         log.info(userInformationMessage);
         throw new UserAlreadyExistsException(userInformationMessage);
     }
 
     public User getUserByUserId(String userId) throws UserNotFoundException {
-        Optional<UserInfo> userInfo = findUserById(userId);
-        if (userInfo.isPresent()) {
-            return mapUserInfoToUser(userInfo.get());
-        }
-        String userInformationMessage = getUserNotFoundByIdMessage(userId);
-        log.info(userInformationMessage);
-        throw new UserNotFoundException(userInformationMessage);
+        UserInfo userInfo = findUserById(userId);
+        return mapUserInfoToUser(userInfo);
     }
 
     public User getUserByUsername(String username) throws UserNotFoundException {
@@ -65,39 +60,33 @@ public class UserService {
     }
 
     public void updateUser(String userId, UpdateUser updateUser) throws UserNotFoundException {
-        Optional<UserInfo> optionalUserInfo = findUserById(userId);
-        if (optionalUserInfo.isEmpty()) {
-            String userInformationMessage = getUserNotFoundByIdMessage(userId);
-            log.info(userInformationMessage);
-            throw new UserNotFoundException(userInformationMessage);
-        }
-        UserInfo userInfo = optionalUserInfo.get();
+        UserInfo userInfo = findUserById(userId);
         updateUserInfo(updateUser, userInfo);
         saveUserToDB(mapUserInfoToUser(userInfo));
     }
 
     public void deleteUser(String userId) throws UserNotFoundException {
-        throwExeptionIfUserDoesNotExist(userId);
+        throwExceptionIfUserDoesNotExist(userId);
         userInfoRepository.deleteById(userId);
     }
 
     public URL uploadFile(String userId, MultipartFile  multipartFile) throws IOException, UnsupportedFileTypeException, UserNotFoundException {
-        throwExeptionIfUserDoesNotExist(userId);
+        throwExceptionIfUserDoesNotExist(userId);
         return s3Client.uploadFileToS3(userId, multipartFile);
     }
 
     public URL getProfilePicture(String userId) throws UserNotFoundException {
-        throwExeptionIfUserDoesNotExist(userId);
+        throwExceptionIfUserDoesNotExist(userId);
         return s3Client.getProfilePictureFromS3(userId);
     }
 
     public URL getResume(String userId) throws UserNotFoundException {
-        throwExeptionIfUserDoesNotExist(userId);
+        throwExceptionIfUserDoesNotExist(userId);
         return s3Client.getResumeFromS3(userId);
     }
 
-    private Optional<UserInfo> findUserById(String userId) {
-        return userInfoRepository.findById(userId);
+    private UserInfo findUserById(String userId) {
+        return userInfoRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(getUserNotFoundByIdMessage(userId)));
     }
 
     private Optional<UserInfo> findUserByUsername(String username) {
@@ -126,7 +115,11 @@ public class UserService {
         return "User with username " + username + " was not found.";
     }
 
-    private void throwExeptionIfUserDoesNotExist(String userId) throws UserNotFoundException {
+    private String getUserAlreadyExistsMessage(String username) {
+        return "User with username " + username + " already exists.";
+    }
+
+    private void throwExceptionIfUserDoesNotExist(String userId) throws UserNotFoundException {
         if (! userInfoRepository.existsById(userId)) {
             String userInformationMessage = getUserNotFoundByIdMessage(userId);
             log.info(userInformationMessage);
