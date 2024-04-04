@@ -62,7 +62,7 @@ class S3ClientTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"image/png", "application/json", "text/plain", "application/octet-stream}"})
-    void testUploadProfilePictureToS3WithNotSupportedMimeTypes_expectSuccess(String contentType) throws IOException {
+    void testUploadProfilePictureToS3WithNotSupportedMimeTypes_expectException(String contentType) throws IOException {
         // arrange
         String userId = UUID.randomUUID().toString();
         MultipartFile multipartFile = new MockMultipartFile(FILE_NAME, FILE_NAME, contentType, new byte[0]);
