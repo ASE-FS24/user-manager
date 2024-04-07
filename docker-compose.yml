@@ -29,6 +29,7 @@ services:
     ports:
       - "8080:8080"
     environment:
+      - usermanager.aws.s3.bucket=nexus-net-user-info-bucket
       - amazon.dynamodb.endpoint=http://localstack:4566/
       - amazon.aws.accesskey=key
       - amazon.aws.secretkey=key2

@@ -1,7 +1,9 @@
 package ch.nexusnet.usermanager.aws.dynamodb.model.table;
 
+
 import ch.nexusnet.usermanager.UsermanagerApplication;
-import ch.nexusnet.usermanager.aws.dynamodb.repositories.FollowRepository;
+import ch.nexusnet.usermanager.aws.dynamodb.model.mapper.UserToUserInfoMapper;
+import ch.nexusnet.usermanager.aws.dynamodb.repositories.UserInfoRepository;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
@@ -11,6 +13,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.jupiter.api.Disabled;
 import org.junit.runner.RunWith;
+import org.openapitools.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -21,8 +24,11 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * <p>
@@ -43,14 +49,14 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(classes = UsermanagerApplication.class)
 @WebAppConfiguration
 @ActiveProfiles("local")
-public class FollowIntegrationTest {
+public class UserInfoIntegrationTest {
     private DynamoDBMapper dynamoDBMapper;
 
     @Autowired
     private AmazonDynamoDB amazonDynamoDB;
 
     @Autowired
-    FollowRepository followRepository;
+    UserInfoRepository userInfoRepository;
 
 
     @ClassRule
@@ -70,29 +76,39 @@ public class FollowIntegrationTest {
         dynamoDBMapper = new DynamoDBMapper(amazonDynamoDB);
 
         CreateTableRequest tableRequest = dynamoDBMapper
-                .generateCreateTableRequest(Follow.class);
+                .generateCreateTableRequest(UserInfo.class);
         tableRequest.setProvisionedThroughput(
                 new ProvisionedThroughput(1L, 1L));
         amazonDynamoDB.createTable(tableRequest);
 
         dynamoDBMapper.batchDelete(
-                (List<Follow>)followRepository.findAll());
+                (List<UserInfo>) userInfoRepository.findAll());
     }
 
     @Test
     public void basicEntryCreation_expectSuccess() {
-        String uuid = "de005d7c-f36f-4342-9c2c-380b1815b499";
-        String followId = "11111";
-        Follow follow = new Follow();
-        follow.setUserId(uuid);
-        follow.setFollowsUserId(followId);
+        User testUser = getUserWithId();
+        UserInfo userInfo = UserToUserInfoMapper.map(testUser);
 
-        followRepository.save(follow);
+        userInfoRepository.save(userInfo);
 
-        List<Follow> result = followRepository.findByUserId(uuid);
+        Optional<UserInfo> result = userInfoRepository.findById(testUser.getId().toString());
 
-        assertEquals(1, result.size());
-        assertEquals(result.get(0).getFollowsUserId(), followId);
+        assertTrue(result.isPresent());
+        assertEquals(result.get().getUsername(), testUser.getUsername());
     }
 
+
+    private User getUserWithoutId() {
+        User user = new User();
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        user.setUsername("jhnd");
+        return user;
+    }
+    private User getUserWithId() {
+        User user = getUserWithoutId();
+        user.setId(UUID.randomUUID());
+        return user;
+    }
 }
