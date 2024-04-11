@@ -26,7 +26,6 @@ public class UserInfo {
     @Setter
     private boolean privateProfile;
 
-
     @DynamoDBHashKey(attributeName = "id")
     public String getId() {
         return id;

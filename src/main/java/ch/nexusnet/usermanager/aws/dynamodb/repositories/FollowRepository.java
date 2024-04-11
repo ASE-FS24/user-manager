@@ -11,4 +11,8 @@ public interface FollowRepository extends
         CrudRepository<Follow, String> {
 
     List<Follow> findByUserId(String userId);
+
+    List<Follow> findByFollowsUserId(String followsUserId);
+
+    Follow findByUserIdAndFollowsUserId(String userId, String followsUserId);
 }
