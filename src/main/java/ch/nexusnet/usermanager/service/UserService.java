@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 @Service
 @AllArgsConstructor
@@ -164,29 +165,25 @@ public class UserService {
     }
 
     private void updateUserInfo(UpdateUser updateUser, UserInfo userInfo) {
-        if (updateUser.getFirstName() != null) {
-            userInfo.setFirstName(updateUser.getFirstName());
-        }
-        if (updateUser.getLastName() != null) {
-            userInfo.setLastName(updateUser.getLastName());
-        }
-        if (updateUser.getUsername() != null) {
-            userInfo.setUsername(updateUser.getUsername());
-        }
-        if (updateUser.getUniversity() != null) {
-            userInfo.setUniversity(updateUser.getUniversity());
-        }
-        if (updateUser.getBio() != null) {
-            userInfo.setBio(updateUser.getBio());
-        }
-        if (updateUser.getDegreeProgram() != null) {
-            userInfo.setDegreeProgram(updateUser.getDegreeProgram());
-        }
-        if (updateUser.getBirthday() != null) {
-            userInfo.setBirthday(updateUser.getBirthday().toString());
+        applyUpdate(updateUser.getFirstName(), userInfo::setFirstName);
+        applyUpdate(updateUser.getLastName(), userInfo::setLastName);
+        applyUpdate(updateUser.getUsername(), userInfo::setUsername);
+        applyUpdate(updateUser.getEmail(), userInfo::setEmail);
+        applyUpdate(updateUser.getMotto(), userInfo::setMotto);
+        applyUpdate(updateUser.getUniversity(), userInfo::setUniversity);
+        applyUpdate(updateUser.getBio(), userInfo::setBio);
+        applyUpdate(updateUser.getDegreeProgram(), userInfo::setDegreeProgram);
+        applyUpdate(updateUser.getBirthday(), birthday -> userInfo.setBirthday(birthday.toString()));
+    }
+
+
+    private <T> void applyUpdate(T value, Consumer<T> updateFunction) {
+        if (value != null) {
+            updateFunction.accept(value);
         }
         if (updateUser.getPrivateProfile() != null) {
             userInfo.setPrivateProfile(updateUser.getPrivateProfile());
         }
     }
+
 }

@@ -6,22 +6,17 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import lombok.Setter;
 
 @DynamoDBTable(tableName = "UserInfo")
+@Setter
 public class UserInfo {
-    @Setter
     private String id;
-    @Setter
     private String username;
-    @Setter
     private String firstName;
-    @Setter
     private String lastName;
-    @Setter
+    private String email;
+    private String motto;
     private String birthday;
-    @Setter
     private String bio;
-    @Setter
     private String university;
-    @Setter
     private String degreeProgram;
     @Setter
     private boolean privateProfile;
@@ -45,6 +40,12 @@ public class UserInfo {
     public String getLastName() {
         return lastName;
     }
+
+    @DynamoDBAttribute(attributeName = "email")
+    public String getEmail() {return email;}
+
+    @DynamoDBAttribute(attributeName = "motto")
+    public String getMotto() {return motto;}
 
     @DynamoDBAttribute(attributeName = "birthday")
     public String getBirthday() {
