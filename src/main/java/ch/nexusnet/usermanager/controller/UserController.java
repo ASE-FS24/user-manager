@@ -1,8 +1,9 @@
 package ch.nexusnet.usermanager.controller;
 
+import ch.nexusnet.usermanager.aws.dynamodb.model.table.Follow;
 import ch.nexusnet.usermanager.aws.s3.exceptions.UnsupportedFileTypeException;
-import ch.nexusnet.usermanager.service.UserService;
 import ch.nexusnet.usermanager.service.FollowService;
+import ch.nexusnet.usermanager.service.UserService;
 import ch.nexusnet.usermanager.service.exceptions.UserAlreadyExistsException;
 import ch.nexusnet.usermanager.service.exceptions.UserNotFoundException;
 import jakarta.validation.constraints.NotNull;
@@ -10,10 +11,9 @@ import lombok.AllArgsConstructor;
 import org.openapitools.api.UsersApi;
 import org.openapitools.model.UpdateUser;
 import org.openapitools.model.User;
+import org.openapitools.model.UserSummary;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -21,7 +21,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 @Controller
@@ -31,6 +30,12 @@ public class UserController implements UsersApi {
     private final UserService userService;
     private final FollowService followService;
     private static final String SERVICE_NOT_AVAILABLE = "Service not available.";
+
+    @Override
+    public ResponseEntity<List<UserSummary>> getUsers() {
+        List<UserSummary> allUsers = userService.getUsers();
+        return ResponseEntity.ok(allUsers);
+    }
 
     @Override
     public ResponseEntity<User> createUser(User newUser) {
@@ -138,36 +143,37 @@ public class UserController implements UsersApi {
         }
     }
 
-    @PostMapping("/users/{userId}/follow/{userToFollowId}")
-    @NotNull
-    public ResponseEntity<Void> followUser(@PathVariable String userId, @PathVariable String userToFollowId) {
-        // TODO: Prevent an user from following itself
-        // TODO: Check if an user is already following another user
+    @Override
+    public ResponseEntity<String> followUser(String userId, String userToFollowId) {
         try {
-            followService.followUser(userId, userToFollowId);
+            Follow follow = followService.followUser(userId, userToFollowId);
+            URI location = URI.create("/users/" + follow.getUserId() + "follows/" + follow.getFollowsUserId());
+            return ResponseEntity.created(location).build();
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Override
+    public ResponseEntity<Void> unfollowUser(String userId, String userToFollowId) {
+        try {
+            followService.unfollowUser(userId, userToFollowId);
             return ResponseEntity.ok().build();
-        } catch (Exception e) {
+        } catch (UserNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
     }
 
-    @PostMapping("/users/{userId}/followers")
-    @NotNull
-    public ResponseEntity<List<User>> getFollowers(@PathVariable String userId) {
-        try {
-            List<String> followerIds = followService.getFollowers(userId);
-            List<User> followers = followerIds.stream()
-                    .map(userService::getUserByUserId)
-                    .collect(Collectors.toList());
-            return ResponseEntity.ok().body(followers);
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
+    @Override
+    public ResponseEntity<List<UserSummary>> getFollows(String userId) {
+        List<UserSummary> follows = followService.getFollows(userId);
+        return ResponseEntity.ok(follows);
     }
 
-    //TODO remove follower
+    @Override
+    public ResponseEntity<List<UserSummary>> getFollowers(String userId) {
+        List<UserSummary> follows = followService.getFollowers(userId);
+        return ResponseEntity.ok(follows);
+    }
 
-    //TODO get follows
-
-    //TODO add documentation and tests
 }
