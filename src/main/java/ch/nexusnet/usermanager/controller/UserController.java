@@ -1,11 +1,8 @@
 package ch.nexusnet.usermanager.controller;
 
 import ch.nexusnet.usermanager.aws.dynamodb.model.table.Follow;
-import ch.nexusnet.usermanager.aws.s3.exceptions.UnsupportedFileTypeException;
 import ch.nexusnet.usermanager.service.FollowService;
 import ch.nexusnet.usermanager.service.UserService;
-import ch.nexusnet.usermanager.service.exceptions.UserAlreadyExistsException;
-import ch.nexusnet.usermanager.service.exceptions.UserNotFoundException;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import org.openapitools.api.UsersApi;
@@ -40,45 +37,29 @@ public class UserController implements UsersApi {
     @Override
     public ResponseEntity<User> createUser(User newUser) {
         User user;
-        try {
-            user = userService.createUser(newUser);
-            URI location = URI.create("/users/" + user.getId());
-            return ResponseEntity.created(location).body(user);
-        } catch (UserAlreadyExistsException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        user = userService.createUser(newUser);
+        URI location = URI.create("/users/" + user.getId());
+        return ResponseEntity.created(location).body(user);
     }
 
     @Override
     public ResponseEntity<Void> deleteUser(String userId) {
-        try {
-            userService.deleteUser(userId);
-            return ResponseEntity.ok().build();
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+        userService.deleteUser(userId);
+        return ResponseEntity.ok().build();
     }
 
 
     @Override
     public ResponseEntity<User> getUserById(String userId) {
         User user;
-        try {
-            user = userService.getUserByUserId(userId);
-            return ResponseEntity.ok().body(user);
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+        user = userService.getUserByUserId(userId);
+        return ResponseEntity.ok().body(user);
     }
 
     @Override
     public ResponseEntity<Void> updateUser(String userId, UpdateUser updateUser) {
-        try {
-            userService.updateUser(userId, updateUser);
-            return ResponseEntity.ok().build();
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+        userService.updateUser(userId, updateUser);
+        return ResponseEntity.ok().build();
     }
 
     @Override
@@ -91,11 +72,8 @@ public class UserController implements UsersApi {
         try {
             URL location = userService.getProfilePicture(userId);
             return ResponseEntity.ok().body(location.toURI().toString());
-
         } catch (URISyntaxException e) {
             return ResponseEntity.internalServerError().body(SERVICE_NOT_AVAILABLE);
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.notFound().build();
         }
     }
 
@@ -112,20 +90,14 @@ public class UserController implements UsersApi {
 
         } catch (URISyntaxException e) {
             return ResponseEntity.internalServerError().body(SERVICE_NOT_AVAILABLE);
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.notFound().build();
         }
     }
 
     @Override
     public ResponseEntity<User> getUserByUsername(String username) {
         User user;
-        try {
-            user = userService.getUserByUsername(username);
-            return ResponseEntity.ok().body(user);
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+        user = userService.getUserByUsername(username);
+        return ResponseEntity.ok().body(user);
     }
 
     @NotNull
@@ -133,35 +105,22 @@ public class UserController implements UsersApi {
         try {
             URL location = userService.uploadFile(userId, resume);
             return ResponseEntity.created(location.toURI()).build();
-
         } catch (IOException | URISyntaxException e) {
             return ResponseEntity.internalServerError().body(SERVICE_NOT_AVAILABLE);
-        } catch (UnsupportedFileTypeException e) {
-            return ResponseEntity.badRequest().body("Unsupported file type.");
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.notFound().build();
         }
     }
 
     @Override
     public ResponseEntity<String> followUser(String userId, String userToFollowId) {
-        try {
-            Follow follow = followService.followUser(userId, userToFollowId);
-            URI location = URI.create("/users/" + follow.getUserId() + "follows/" + follow.getFollowsUserId());
-            return ResponseEntity.created(location).build();
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+        Follow follow = followService.followUser(userId, userToFollowId);
+        URI location = URI.create("/users/" + follow.getUserId() + "follows/" + follow.getFollowsUserId());
+        return ResponseEntity.created(location).build();
     }
 
     @Override
     public ResponseEntity<Void> unfollowUser(String userId, String userToFollowId) {
-        try {
-            followService.unfollowUser(userId, userToFollowId);
-            return ResponseEntity.ok().build();
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+        followService.unfollowUser(userId, userToFollowId);
+        return ResponseEntity.ok().build();
     }
 
     @Override
