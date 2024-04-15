@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,6 +25,20 @@ public class FollowService {
     private final FollowRepository followRepository;
     private final UserInfoRepository userInfoRepository;
     private final UserService userService;
+
+    public List<List<UserSummary>> getAllFollows() {
+        List<List<UserSummary>> userSummaries = new ArrayList<>();
+
+        Iterable<Follow> followsIterable = followRepository.findAll();
+        followsIterable.forEach(element -> {
+            List<UserSummary> currentFollowConnection = new ArrayList<>();
+            currentFollowConnection.add(getUserSummaryFromFollow(element.getUserId()));
+            currentFollowConnection.add(getUserSummaryFromFollow(element.getFollowsUserId()));
+            userSummaries.add(currentFollowConnection);
+        });
+
+        return userSummaries;
+    }
 
     public Follow followUser(String userId, String followsUserId) throws UserNotFoundException {
         throwExceptionIfUserDoesNotExist(userId);
@@ -70,6 +85,14 @@ public class FollowService {
         return userSummaries;
     }
 
+    private UserSummary getUserSummaryFromFollow(String userId) {
+        Optional<UserInfo> userInfo = userInfoRepository.findById(userId);
+        if (userInfo.isEmpty()) {
+            throwUserNotFoundException(userId);
+        }
+        return createUserSummary(userInfo.get());
+    }
+
     private UserSummary createUserSummary(UserInfo userInfo) {
         UserSummary userSummary = UserInfoToUserSummaryMapper.map(userInfo);
         URL url = userService.getProfilePicture(userInfo.getId());
@@ -80,11 +103,15 @@ public class FollowService {
     }
 
     private void throwExceptionIfUserDoesNotExist(String userId) throws UserNotFoundException {
-        if (! userInfoRepository.existsById(userId)) {
-            String userInformationMessage = getUserNotFoundByIdMessage(userId);
-            log.info(userInformationMessage);
-            throw new UserNotFoundException(userInformationMessage);
+        if (!userInfoRepository.existsById(userId)) {
+            throwUserNotFoundException(userId);
         }
+    }
+
+    private void throwUserNotFoundException(String userId) {
+        String userInformationMessage = getUserNotFoundByIdMessage(userId);
+        log.info(userInformationMessage);
+        throw new UserNotFoundException(userInformationMessage);
     }
 
     private String getUserNotFoundByIdMessage(String userId) {

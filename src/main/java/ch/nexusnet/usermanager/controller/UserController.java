@@ -135,4 +135,10 @@ public class UserController implements UsersApi {
         return ResponseEntity.ok(follows);
     }
 
+    @Override
+    public ResponseEntity<List<List<UserSummary>>> getAllFollows() {
+        List<List<UserSummary>> allFollows = followService.getAllFollows();
+        return ResponseEntity.ok(allFollows);
+    }
+
 }
