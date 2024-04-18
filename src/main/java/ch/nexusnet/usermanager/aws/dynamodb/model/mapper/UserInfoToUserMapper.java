@@ -34,6 +34,8 @@ public class UserInfoToUserMapper {
         user.setBio(userInfo.getBio());
         user.setUniversity(userInfo.getUniversity());
         user.setDegreeProgram(userInfo.getDegreeProgram());
+        user.setPrivateProfile(userInfo.getPrivateProfile());
+
 
         return user;
     }

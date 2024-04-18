@@ -244,6 +244,8 @@ components:
         birthday:
           type: string
           format: date
+        privateProfile:
+          type: boolean
 
     UpdateUser:
       type: object
@@ -263,3 +265,5 @@ components:
         birthday:
           type: string
           format: date
+        privateProfile:
+          type: boolean
