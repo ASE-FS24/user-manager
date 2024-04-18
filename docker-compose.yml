@@ -14,18 +14,18 @@ services:
       - LAMBDA_LIMITS_CODE_SIZE_ZIPPED=524288000
       - LAMBDA_LIMITS_CREATE_FUNCTION_REQUEST_SIZE=524288000
       - LAMBDA_DOCKER_NETWORK=backend
-
+      - DYNAMODB_SHARE_DB=1
     volumes:
       - './:/etc/localstack/init/ready.d/' # Mount your project directory to automatically run scripts
       - '/var/run/docker.sock:/var/run/docker.sock' # Mount the Docker socket to allow LocalStack to manage Docker containers
-      - './target/usermanager-0.0.1-SNAPSHOT.jar:/tmp/usermanager-0.0.1-SNAPSHOT.jar' # Mount the jar file to be used by the lambda
+      - './target/usermanager.jar:/tmp/usermanager.jar' # Mount the jar file to be used by the lambda
     networks:
       - network
 
   usermanager:
     build:
       context: .
-      dockerfile: ./user-manager/Dockerfile
+      dockerfile: ./Dockerfile
     ports:
       - "8080:8080"
     environment:
