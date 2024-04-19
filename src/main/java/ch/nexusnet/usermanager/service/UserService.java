@@ -107,8 +107,10 @@ public class UserService {
             try {
                 URL url = getProfilePicture(element.getId());
                 userSummary.setProfilePicture(url.toString());
-            } catch (UserNotFoundException | FileDoesNotExistException e) {
-               log.info(getUserNotFoundByIdMessage(element.getId()));
+            } catch (UserNotFoundException e) {
+                log.info(getUserNotFoundByIdMessage(element.getId()));
+            } catch (FileDoesNotExistException e) {
+                log.info(getFileWasNotFoundMessage());
             }
             allUsers.add(userSummary);
         });
@@ -160,10 +162,14 @@ public class UserService {
 
     private void throwExceptionIfFileDoesNotExist(URL filePath) throws FileDoesNotExistException {
         if (filePath == null) {
-            String fileInformationMessage = "File was not found.";
+            String fileInformationMessage = getFileWasNotFoundMessage();
             log.info(fileInformationMessage);
             throw new FileDoesNotExistException(fileInformationMessage);
         }
+    }
+
+    private static String getFileWasNotFoundMessage() {
+        return "File was not found.";
     }
 
     private void updateUserInfo(UpdateUser updateUser, UserInfo userInfo) {

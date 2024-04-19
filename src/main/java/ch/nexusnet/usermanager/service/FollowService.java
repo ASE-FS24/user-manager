@@ -5,7 +5,9 @@ import ch.nexusnet.usermanager.aws.dynamodb.model.table.Follow;
 import ch.nexusnet.usermanager.aws.dynamodb.model.table.UserInfo;
 import ch.nexusnet.usermanager.aws.dynamodb.repositories.FollowRepository;
 import ch.nexusnet.usermanager.aws.dynamodb.repositories.UserInfoRepository;
+import ch.nexusnet.usermanager.service.exceptions.FileDoesNotExistException;
 import ch.nexusnet.usermanager.service.exceptions.UserNotFoundException;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openapitools.model.UserSummary;
@@ -15,7 +17,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @AllArgsConstructor
@@ -58,26 +60,30 @@ public class FollowService {
 
     public List<UserSummary> getFollows(String userId) {
         List<Follow> followIds = followRepository.findByUserId(userId);
-        return getUserSummariesFromFollows(followIds, false);
+        return getUserSummariesForFollows(followIds);
     }
 
     public List<UserSummary> getFollowers(String userId) {
         List<Follow> followIds = followRepository.findByFollowsUserId(userId);
-        return getUserSummariesFromFollows(followIds, true);
+        return getUserSummariesForFollowers(followIds);
     }
 
-    private List<UserSummary> getUserSummariesFromFollows(List<Follow> follows, boolean followers) {
+    private List<UserSummary> getUserSummariesForFollows(List<Follow> follows) {
         // Extract user IDs from follows and fetch UserInfo objects in bulk
+        return getUserSummaries(follows.stream()
+                .map(Follow::getFollowsUserId));
+    }
+
+    private List<UserSummary> getUserSummariesForFollowers(List<Follow> follows) {
+        // Extract user IDs from follows and fetch UserInfo objects in bulk
+        return getUserSummaries(follows.stream()
+                .map(Follow::getUserId));
+    }
+
+    @NotNull
+    private List<UserSummary> getUserSummaries(Stream<String> stringStream) {
         List<String> userIds;
-        if (followers) {
-            userIds = follows.stream()
-                    .map(Follow::getUserId)
-                    .collect(Collectors.toList());
-        } else {
-            userIds = follows.stream()
-                    .map(Follow::getFollowsUserId)
-                    .collect(Collectors.toList());
-        }
+        userIds = stringStream.toList();
         Iterable<UserInfo> usersInfo = userInfoRepository.findAllById(userIds);
 
         List<UserSummary> userSummaries = new ArrayList<>();
@@ -95,9 +101,13 @@ public class FollowService {
 
     private UserSummary createUserSummary(UserInfo userInfo) {
         UserSummary userSummary = UserInfoToUserSummaryMapper.map(userInfo);
-        URL url = userService.getProfilePicture(userInfo.getId());
-        if (url != null) {
+        try {
+            URL url = userService.getProfilePicture(userInfo.getId());
             userSummary.setProfilePicture(url.toString());
+        } catch (UserNotFoundException e) {
+            log.info(getUserNotFoundByIdMessage(userInfo.getId()));
+        } catch (FileDoesNotExistException e) {
+            log.info(getFileNotFoundByIdMessage(userInfo.getId()));
         }
         return userSummary;
     }
@@ -116,5 +126,9 @@ public class FollowService {
 
     private String getUserNotFoundByIdMessage(String userId) {
         return "User with user id " + userId + " was not found.";
+    }
+
+    private String getFileNotFoundByIdMessage(String userId) {
+        return "File for user with id " + userId + " was not found.";
     }
 }
