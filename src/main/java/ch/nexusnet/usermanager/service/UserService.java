@@ -104,9 +104,11 @@ public class UserService {
 
         userInfos.forEach(element -> {
             UserSummary userSummary = UserInfoToUserSummaryMapper.map(element);
-            URL url = getProfilePicture(element.getId());
-            if (url != null) {
+            try {
+                URL url = getProfilePicture(element.getId());
                 userSummary.setProfilePicture(url.toString());
+            } catch (UserNotFoundException | FileDoesNotExistException e) {
+               log.info(getUserNotFoundByIdMessage(element.getId()));
             }
             allUsers.add(userSummary);
         });
