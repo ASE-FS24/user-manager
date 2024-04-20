@@ -61,12 +61,12 @@ public class FollowService {
     }
 
     public List<UserSummary> getFollows(String userId) {
-        List<Follow> followIds = followRepository.findByUserId(userId);
+        List<Follow> followIds = followRepository.findAllByUserId(userId);
         return getUserSummariesForFollows(followIds);
     }
 
     public List<UserSummary> getFollowers(String userId) {
-        List<Follow> followIds = followRepository.findByFollowsUserId(userId);
+        List<Follow> followIds = followRepository.findAllByFollowsUserId(userId);
         return getUserSummariesForFollowers(followIds);
     }
 

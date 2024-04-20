@@ -102,7 +102,7 @@ public class FollowIntegrationTest {
 
         followRepository.save(follow);
 
-        List<Follow> result = followRepository.findByUserId(uuid);
+        List<Follow> result = followRepository.findAllByUserId(uuid);
 
         assertEquals(1, result.size());
         assertEquals(result.get(0).getFollowsUserId(), followId);
@@ -118,7 +118,7 @@ public class FollowIntegrationTest {
 
         followRepository.save(follow);
 
-        List<Follow> result = followRepository.findByFollowsUserId(followId);
+        List<Follow> result = followRepository.findAllByFollowsUserId(followId);
 
         assertEquals(1, result.size());
         assertEquals(result.get(0).getFollowsUserId(), followId);
