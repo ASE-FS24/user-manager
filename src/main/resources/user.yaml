@@ -271,7 +271,7 @@ paths:
           description: User not found
 
 
-  /users/{userId}/follows/:
+  /users/{userId}/follows:
     get:
       summary: Get all follows of a user
       operationId: getFollows
@@ -294,7 +294,7 @@ paths:
         '404':
           description: User not found
 
-  /users/{userId}/followers/:
+  /users/{userId}/followers:
     get:
       summary: Get all followers of a user
       operationId: getFollowers

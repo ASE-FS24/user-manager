@@ -17,6 +17,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 @Service
@@ -46,6 +47,7 @@ public class FollowService {
         throwExceptionIfUserDoesNotExist(userId);
         throwExceptionIfUserDoesNotExist(followsUserId);
         Follow follow = new Follow();
+        follow.setId(UUID.randomUUID().toString());
         follow.setUserId(userId);
         follow.setFollowsUserId(followsUserId);
         return followRepository.save(follow);
