@@ -1,12 +1,13 @@
 package ch.nexusnet.usermanager.aws;
 
-import ch.nexusnet.usermanager.UsermanagerApplication;
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.SpringLambdaContainerHandler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+
+import ch.nexusnet.usermanager.UsermanagerApplication;
 
 import java.io.IOException;
 import java.io.InputStream;

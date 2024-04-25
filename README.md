@@ -3,6 +3,7 @@ This app handles User Authentication and Profile Management
 
 # Usage
 - Clone the repository
+- compile the code using `mvn package` - Latest
 - compile the code using `mvn clean install`
 - start Docker
 - Run the command `docker-compose up` to start the application and localstack
