@@ -2,23 +2,18 @@
 FROM ubuntu:latest
 
 RUN apt-get update && \
-    apt-get install -y curl &&\
+    apt-get install -y curl xdg-utils python3-venv &&\
     apt install -y xdg-utils
-
 
 # Install OpenJDK, AWS CLI, and LocalStack dependencies
 RUN apt-get update && \
-    apt-get install -y openjdk-17-jdk curl python3 python3-pip groff less zip iputils-ping 
-    # && \
-    # apt-get clean && \
-    # rm -rf /var/lib/apt/lists/*
+    apt-get install -y openjdk-17-jdk curl python3 python3-pip groff less zip iputils-ping
 
-# Install AWS CLI using pip3
-RUN pip3 install --upgrade awscli
-RUN pip3 install awscli-local
-
-# Install LocalStack using pip3
-# RUN pip3 install localstack
+# Create a Python virtual environment and install AWS CLI
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+RUN pip install --upgrade awscli
+RUN pip install awscli-local
 
 # Optional: Set the environment variable for the app directory
 ENV APP_HOME=/usr/app
