@@ -153,6 +153,7 @@ class UserServiceTest {
         assertEquals(expectedUpdatedUser.getBio(), captor.getValue().getBio());
         assertEquals(expectedUpdatedUser.getDegreeProgram(), captor.getValue().getDegreeProgram());
         assertEquals(expectedUpdatedUser.getBirthday(), captor.getValue().getBirthday());
+        assertEquals(expectedUpdatedUser.getPrivateProfile(), captor.getValue().getPrivateProfile());
     }
 
     @Test
@@ -303,6 +304,7 @@ class UserServiceTest {
         updateUser.setBio("Master Student");
         updateUser.setDegreeProgram("AI");
         updateUser.setBirthday(LocalDate.of(2024, 3, 28));
+        updateUser.privateProfile(true);
         return updateUser;
     }
 
@@ -316,6 +318,7 @@ class UserServiceTest {
         expectedUpdatedUser.setBio(updateUser.getBio());
         expectedUpdatedUser.setDegreeProgram(updateUser.getDegreeProgram());
         expectedUpdatedUser.setBirthday(updateUser.getBirthday().toString());
+        expectedUpdatedUser.setPrivateProfile(updateUser.getPrivateProfile());
         return expectedUpdatedUser;
     }
 }

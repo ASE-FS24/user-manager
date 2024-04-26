@@ -23,6 +23,8 @@ public class UserInfo {
     private String university;
     @Setter
     private String degreeProgram;
+    @Setter
+    private boolean privateProfile;
 
 
     @DynamoDBHashKey(attributeName = "id")
@@ -63,5 +65,10 @@ public class UserInfo {
     @DynamoDBAttribute(attributeName = "degreeprogram")
     public String getDegreeProgram() {
         return degreeProgram;
+    }
+
+    @DynamoDBAttribute(attributeName = "privateprofile")
+    public boolean getPrivateProfile() {
+        return privateProfile;
     }
 }

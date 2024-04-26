@@ -149,5 +149,8 @@ public class UserService {
         if (updateUser.getBirthday() != null) {
             userInfo.setBirthday(updateUser.getBirthday().toString());
         }
+        if (updateUser.getPrivateProfile() != null) {
+            userInfo.setPrivateProfile(updateUser.getPrivateProfile());
+        }
     }
 }
