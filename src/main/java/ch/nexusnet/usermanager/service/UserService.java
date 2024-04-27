@@ -1,25 +1,30 @@
 package ch.nexusnet.usermanager.service;
 
 import ch.nexusnet.usermanager.aws.dynamodb.model.mapper.UserInfoToUserMapper;
+import ch.nexusnet.usermanager.aws.dynamodb.model.mapper.UserInfoToUserSummaryMapper;
 import ch.nexusnet.usermanager.aws.dynamodb.model.mapper.UserToUserInfoMapper;
 import ch.nexusnet.usermanager.aws.dynamodb.model.table.UserInfo;
 import ch.nexusnet.usermanager.aws.dynamodb.repositories.UserInfoRepository;
 import ch.nexusnet.usermanager.aws.s3.client.S3Client;
 import ch.nexusnet.usermanager.aws.s3.exceptions.UnsupportedFileTypeException;
+import ch.nexusnet.usermanager.service.exceptions.FileDoesNotExistException;
 import ch.nexusnet.usermanager.service.exceptions.UserAlreadyExistsException;
 import ch.nexusnet.usermanager.service.exceptions.UserNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openapitools.model.UpdateUser;
 import org.openapitools.model.User;
+import org.openapitools.model.UserSummary;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 @Service
 @AllArgsConstructor
@@ -28,6 +33,11 @@ public class UserService {
 
     private final UserInfoRepository userInfoRepository;
     private final S3Client s3Client;
+
+    public List<UserSummary> getUsers() {
+        Iterable<UserInfo> userInfos = userInfoRepository.findAll();
+        return getUserSummariesFromUserInfos(userInfos);
+    }
 
     public User createUser(User newUser) throws UserAlreadyExistsException {
         if (newUser.getId() == null) {
@@ -75,14 +85,37 @@ public class UserService {
         return s3Client.uploadFileToS3(userId, multipartFile);
     }
 
-    public URL getProfilePicture(String userId) throws UserNotFoundException {
+    public URL getProfilePicture(String userId) throws UserNotFoundException, FileDoesNotExistException {
         throwExceptionIfUserDoesNotExist(userId);
-        return s3Client.getProfilePictureFromS3(userId);
+        URL profilePicturePath = s3Client.getProfilePictureFromS3(userId);
+        throwExceptionIfFileDoesNotExist(profilePicturePath);
+        return profilePicturePath;
     }
 
-    public URL getResume(String userId) throws UserNotFoundException {
+    public URL getResume(String userId) throws UserNotFoundException, FileDoesNotExistException {
         throwExceptionIfUserDoesNotExist(userId);
-        return s3Client.getResumeFromS3(userId);
+        URL resumePath = s3Client.getResumeFromS3(userId);
+        throwExceptionIfFileDoesNotExist(resumePath);
+        return resumePath;
+    }
+
+    private List<UserSummary> getUserSummariesFromUserInfos(Iterable<UserInfo> userInfos) {
+        List<UserSummary> allUsers = new ArrayList<>();
+
+        userInfos.forEach(element -> {
+            UserSummary userSummary = UserInfoToUserSummaryMapper.map(element);
+            try {
+                URL url = getProfilePicture(element.getId());
+                userSummary.setProfilePicture(url.toString());
+            } catch (UserNotFoundException e) {
+                log.info(getUserNotFoundByIdMessage(element.getId()));
+            } catch (FileDoesNotExistException e) {
+                log.info(getFileWasNotFoundMessage());
+            }
+            allUsers.add(userSummary);
+        });
+
+        return allUsers;
     }
 
     private UserInfo findUserById(String userId) {
@@ -127,30 +160,38 @@ public class UserService {
         }
     }
 
+    private void throwExceptionIfFileDoesNotExist(URL filePath) throws FileDoesNotExistException {
+        if (filePath == null) {
+            String fileInformationMessage = getFileWasNotFoundMessage();
+            log.info(fileInformationMessage);
+            throw new FileDoesNotExistException(fileInformationMessage);
+        }
+    }
+
+    private static String getFileWasNotFoundMessage() {
+        return "File was not found.";
+    }
+
     private void updateUserInfo(UpdateUser updateUser, UserInfo userInfo) {
-        if (updateUser.getFirstName() != null) {
-            userInfo.setFirstName(updateUser.getFirstName());
-        }
-        if (updateUser.getLastName() != null) {
-            userInfo.setLastName(updateUser.getLastName());
-        }
-        if (updateUser.getUsername() != null) {
-            userInfo.setUsername(updateUser.getUsername());
-        }
-        if (updateUser.getUniversity() != null) {
-            userInfo.setUniversity(updateUser.getUniversity());
-        }
-        if (updateUser.getBio() != null) {
-            userInfo.setBio(updateUser.getBio());
-        }
-        if (updateUser.getDegreeProgram() != null) {
-            userInfo.setDegreeProgram(updateUser.getDegreeProgram());
-        }
-        if (updateUser.getBirthday() != null) {
-            userInfo.setBirthday(updateUser.getBirthday().toString());
+        applyUpdate(updateUser.getFirstName(), userInfo::setFirstName);
+        applyUpdate(updateUser.getLastName(), userInfo::setLastName);
+        applyUpdate(updateUser.getUsername(), userInfo::setUsername);
+        applyUpdate(updateUser.getEmail(), userInfo::setEmail);
+        applyUpdate(updateUser.getMotto(), userInfo::setMotto);
+        applyUpdate(updateUser.getUniversity(), userInfo::setUniversity);
+        applyUpdate(updateUser.getBio(), userInfo::setBio);
+        applyUpdate(updateUser.getDegreeProgram(), userInfo::setDegreeProgram);
+        applyUpdate(updateUser.getBirthday(), birthday -> userInfo.setBirthday(birthday.toString()));
+    }
+
+
+    private <T> void applyUpdate(T value, Consumer<T> updateFunction) {
+        if (value != null) {
+            updateFunction.accept(value);
         }
         if (updateUser.getPrivateProfile() != null) {
             userInfo.setPrivateProfile(updateUser.getPrivateProfile());
         }
     }
+
 }

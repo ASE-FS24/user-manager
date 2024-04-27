@@ -5,14 +5,19 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import lombok.Setter;
 
+@Setter
 @DynamoDBTable(tableName = "Follow")
 public class Follow {
-    @Setter
+    private String id;
     private String userId;
-    @Setter
     private String followsUserId;
 
-    @DynamoDBHashKey(attributeName = "userId")
+    @DynamoDBHashKey(attributeName = "id")
+    public String getId() {
+        return id;
+    }
+
+    @DynamoDBAttribute(attributeName = "userId")
     public String getUserId() {
         return userId;
     }

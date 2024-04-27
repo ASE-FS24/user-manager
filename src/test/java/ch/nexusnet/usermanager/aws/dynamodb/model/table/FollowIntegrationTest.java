@@ -5,6 +5,7 @@ import ch.nexusnet.usermanager.aws.dynamodb.repositories.FollowRepository;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
+import com.amazonaws.services.dynamodbv2.model.ListTablesResult;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -14,7 +15,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.testcontainers.containers.GenericContainer;
@@ -22,7 +22,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * <p>
@@ -73,7 +73,20 @@ public class FollowIntegrationTest {
                 .generateCreateTableRequest(Follow.class);
         tableRequest.setProvisionedThroughput(
                 new ProvisionedThroughput(1L, 1L));
-        amazonDynamoDB.createTable(tableRequest);
+
+        // Check if the table already exists
+        ListTablesResult listTablesResult = amazonDynamoDB.listTables();
+        boolean tableExists = listTablesResult.getTableNames()
+                .stream()
+                .anyMatch(tableName -> tableName.equals(tableRequest.getTableName()));
+
+        if (!tableExists) {
+            amazonDynamoDB.createTable(tableRequest);
+        } else {
+            // Optionally reset the table if it already exists
+            amazonDynamoDB.deleteTable(tableRequest.getTableName());
+            amazonDynamoDB.createTable(tableRequest);
+        }
 
         dynamoDBMapper.batchDelete(
                 (List<Follow>)followRepository.findAll());
@@ -89,7 +102,23 @@ public class FollowIntegrationTest {
 
         followRepository.save(follow);
 
-        List<Follow> result = followRepository.findByUserId(uuid);
+        List<Follow> result = followRepository.findAllByUserId(uuid);
+
+        assertEquals(1, result.size());
+        assertEquals(result.get(0).getFollowsUserId(), followId);
+    }
+
+    @Test
+    public void getUserByFollowId_expectSuccess() {
+        String uuid = "de005d7c-f36f-4342-9c2c-380b1815b499";
+        String followId = "11111";
+        Follow follow = new Follow();
+        follow.setUserId(uuid);
+        follow.setFollowsUserId(followId);
+
+        followRepository.save(follow);
+
+        List<Follow> result = followRepository.findAllByFollowsUserId(followId);
 
         assertEquals(1, result.size());
         assertEquals(result.get(0).getFollowsUserId(), followId);

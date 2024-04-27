@@ -52,9 +52,13 @@ public class S3Client {
 
     public URL getProfilePictureFromS3(String userid) {
         AmazonS3 s3 = getS3Client();
-        Date expiration = getExpirationDateForURL();
         String keyName = USER_FILE_PATH + userid + PROFILE_PICTURE;
+        if (!doesFileExist(s3, keyName)) {
+            return null;
+        }
+        Date expiration = getExpirationDateForURL();
         return generatePresignedURL(keyName, expiration, s3);
+
     }
 
     public URL getResumeFromS3(String userid) {
@@ -101,5 +105,9 @@ public class S3Client {
                         .withMethod(HttpMethod.GET)
                         .withExpiration(expiration);
         return s3.generatePresignedUrl(generatePresignedUrlRequest);
+    }
+
+    private boolean doesFileExist(AmazonS3 s3, String keyName) {
+        return s3.doesObjectExist(bucketName, keyName);
     }
 }

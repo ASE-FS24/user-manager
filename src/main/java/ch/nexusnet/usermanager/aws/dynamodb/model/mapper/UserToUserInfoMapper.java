@@ -36,6 +36,8 @@ public class UserToUserInfoMapper {
         userInfo.setUsername(user.getUsername());
         userInfo.setFirstName(user.getFirstName());
         userInfo.setLastName(user.getLastName());
+        userInfo.setEmail(user.getEmail());
+        userInfo.setEmail(user.getEmail());
         userInfo.setBio(user.getBio());
         userInfo.setUniversity(user.getUniversity());
         userInfo.setDegreeProgram(user.getDegreeProgram());

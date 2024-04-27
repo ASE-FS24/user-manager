@@ -1,5 +1,6 @@
 package ch.nexusnet.usermanager.service;
 
+import ch.nexusnet.usermanager.aws.dynamodb.model.mapper.UserInfoToUserSummaryMapper;
 import ch.nexusnet.usermanager.aws.dynamodb.model.mapper.UserToUserInfoMapper;
 import ch.nexusnet.usermanager.aws.dynamodb.model.table.UserInfo;
 import ch.nexusnet.usermanager.aws.dynamodb.repositories.UserInfoRepository;
@@ -18,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openapitools.model.UpdateUser;
 import org.openapitools.model.User;
+import org.openapitools.model.UserSummary;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -65,6 +67,21 @@ class UserServiceTest {
         // assert
         assertNotNull(createdUser.getId());
     }
+
+    @ParameterizedTest
+    @MethodSource("getUsers")
+    void getUsers(User testUser) {
+        // arrange
+        when(userInfoRepositoryMock.findAll()).thenReturn(List.of(UserToUserInfoMapper.map(testUser)));
+
+        // act
+        List<UserSummary> users = userService.getUsers();
+
+        // assert
+        assertEquals(1, users.size());
+        assertEquals(UserInfoToUserSummaryMapper.map(UserToUserInfoMapper.map(testUser)).getId(), users.get(0).getId());
+    }
+
 
     @ParameterizedTest
     @MethodSource("getUsers")
