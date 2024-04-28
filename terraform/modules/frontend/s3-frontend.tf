@@ -1,3 +1,15 @@
+resource "null_resource" "run_shell_script" {
+  # This resource will run the shell script before any Terraform command
+  triggers = {
+    always_run = "${timestamp()}"
+  }
+
+  provisioner "local-exec" {
+    # Specify the path to your shell script
+    command = "bash /root/nexus-net/frontbackallwithgits/user-manager/terraform/modules/frontend/build_frontend.sh"
+  }
+}
+
 ########## FRONT END ############
 resource "aws_s3_bucket" "frontend" {
   bucket        = "${var.fr_project_name}-frontend"

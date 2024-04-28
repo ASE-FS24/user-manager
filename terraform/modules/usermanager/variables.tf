@@ -30,7 +30,7 @@ variable "api_path" {
 }
 
 variable "usermanager_jar" {
-  default = "original2-usermanager.jar"  
+  default = "original-usermanager.jar"  
 }
 
 variable "build_folder" {

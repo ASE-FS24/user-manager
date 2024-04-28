@@ -2,10 +2,10 @@
 #   value = aws_cloudfront_distribution.usermanager-distribution.domain_name
 # }
 
-output "usermanager_lambda_api_endpoint" {
+output "postmanager_lambda_api_endpoint" {
   value = aws_apigatewayv2_stage.pm_default_api.invoke_url
 }
 
-output "usermanager_lambda_api_arn" {
+output "postmanager_lambda_api_arn" {
   value = aws_lambda_function.postmanager_api.arn
 }

@@ -77,6 +77,5 @@ resource "aws_apigatewayv2_route" "update_post" {
 resource "aws_apigatewayv2_route" "delete_post" {
   api_id    = aws_apigatewayv2_api.postmanager.id
   route_key = "DELETE /posts/{id}"
-
   target = "integrations/${aws_apigatewayv2_integration.postmanager_rest_api.id}"
 }
