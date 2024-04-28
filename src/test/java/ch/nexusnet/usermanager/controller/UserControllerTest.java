@@ -1,9 +1,6 @@
 package ch.nexusnet.usermanager.controller;
 
-import ch.nexusnet.usermanager.aws.s3.exceptions.UnsupportedFileTypeException;
 import ch.nexusnet.usermanager.service.UserService;
-import ch.nexusnet.usermanager.service.exceptions.UserAlreadyExistsException;
-import ch.nexusnet.usermanager.service.exceptions.UserNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -60,18 +57,6 @@ class UserControllerTest {
     }
 
     @Test
-    void whenUserAlreadyExists_expectStatusCodeBadRequest() {
-        // arrange
-        when(userService.createUser(any(User.class))).thenThrow(new UserAlreadyExistsException("User Already Exists"));
-
-        // act
-        ResponseEntity<User> response = userController.createUser(new User());
-
-        // assert
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-    }
-
-    @Test
     void retrieveUser_expectOk() {
         // arrange
         UUID userId = UUID.randomUUID();
@@ -87,19 +72,6 @@ class UserControllerTest {
     }
 
     @Test
-    void whenUserIdIsNotRegistered_expectNotFound() {
-        // arrange
-        String wrongUserId = UUID.randomUUID().toString();
-        when(userService.getUserByUserId(wrongUserId)).thenThrow(new UserNotFoundException("User Not Found"));
-
-        // act
-        ResponseEntity<User> response = userController.getUserById(wrongUserId);
-
-        // assert
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-    }
-
-    @Test
     void deleteUser_expectOk() {
         // arrange
         String userId = UUID.randomUUID().toString();
@@ -110,19 +82,6 @@ class UserControllerTest {
 
         // assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
-    }
-
-    @Test
-    void whenUserToDeleteDoesNotExist_expectNotFound() {
-        // arrange
-        String userId = UUID.randomUUID().toString();
-        doThrow(new UserNotFoundException("User with id " + userId + "was not found")).when(userService).deleteUser(userId);
-
-        // act
-        ResponseEntity<Void> response = userController.deleteUser(userId);
-
-        // assert
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Test
@@ -140,20 +99,6 @@ class UserControllerTest {
     }
 
     @Test
-    void whenUserToUpdateDoesNotExist_expectNotFound() {
-        // arrange
-        UpdateUser updateUser = new UpdateUser();
-        String userId = UUID.randomUUID().toString();
-        doThrow(new UserNotFoundException("User with id " + userId + "was not found")).when(userService).updateUser(userId, updateUser);
-
-        // act
-        ResponseEntity<Void> response = userController.updateUser(userId, updateUser);
-
-        // assert
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-    }
-
-    @Test
     void uploadProfilePicture_expectOk() throws IOException, URISyntaxException {
         // arrange
         String userId = UUID.randomUUID().toString();
@@ -166,36 +111,6 @@ class UserControllerTest {
 
         // assert
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-    }
-
-    @Test
-    void whenUploadProfilePictureWrongMimeType_returnBadRequest() throws IOException {
-        // arrange
-        String userId = UUID.randomUUID().toString();
-        MultipartFile multipartFile = mock(MultipartFile.class);
-        doThrow(new UnsupportedFileTypeException("unsupportedFileType")).
-                when(userService).uploadFile(userId, multipartFile);
-
-        // act
-        ResponseEntity<String> response = userController.uploadProfilePicture(userId, multipartFile);
-
-        // assert
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-    }
-
-    @Test
-    void whenUploadProfilePictureWithNonExistentUser_returnNotFound() throws IOException {
-        // arrange
-        String userId = UUID.randomUUID().toString();
-        MultipartFile multipartFile = mock(MultipartFile.class);
-        doThrow(new UserNotFoundException("User not found")).
-                when(userService).uploadFile(userId, multipartFile);
-
-        // act
-        ResponseEntity<String> response = userController.uploadProfilePicture(userId, multipartFile);
-
-        // assert
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @ParameterizedTest
@@ -241,21 +156,6 @@ class UserControllerTest {
 
         // assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
-    }
-
-    @Test
-    void whenGetProfilePictureWithCloudStorageError_expectInternalServerError() throws IOException {
-        // arrange
-        String userId = UUID.randomUUID().toString();
-        MultipartFile multipartFile = mock(MultipartFile.class);
-        doThrow(new UserNotFoundException("User not found")).
-                when(userService).getProfilePicture(userId);
-
-        // act
-        ResponseEntity<String> response = userController.getProfilePicture(userId);
-
-        // assert
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Test

@@ -83,6 +83,7 @@ class S3ClientTest {
         AmazonS3 s3Mock = mock(AmazonS3.class);
 
         when(s3ClientConfigurationMock.getS3client()).thenReturn(s3Mock);
+        when(s3Mock.doesObjectExist(any(), any())).thenReturn(true);
         when(s3Mock.generatePresignedUrl(any())).thenReturn(new URL(TEST_URL));
 
         GeneratePresignedUrlRequest expectedGeneratePresignedUrlRequest = new GeneratePresignedUrlRequest(

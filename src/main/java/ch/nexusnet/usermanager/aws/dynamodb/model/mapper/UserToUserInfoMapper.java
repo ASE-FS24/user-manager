@@ -27,9 +27,17 @@ public class UserToUserInfoMapper {
             userInfo.setBirthday(null);
         }
 
+        if (user.getPrivateProfile() != null) {
+            userInfo.setPrivateProfile(user.getPrivateProfile());
+        } else {
+            userInfo.setPrivateProfile(false);
+        }
+
         userInfo.setUsername(user.getUsername());
         userInfo.setFirstName(user.getFirstName());
         userInfo.setLastName(user.getLastName());
+        userInfo.setEmail(user.getEmail());
+        userInfo.setEmail(user.getEmail());
         userInfo.setBio(user.getBio());
         userInfo.setUniversity(user.getUniversity());
         userInfo.setDegreeProgram(user.getDegreeProgram());

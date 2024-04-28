@@ -1,5 +1,6 @@
 package ch.nexusnet.usermanager.service;
 
+import ch.nexusnet.usermanager.aws.dynamodb.model.mapper.UserInfoToUserSummaryMapper;
 import ch.nexusnet.usermanager.aws.dynamodb.model.mapper.UserToUserInfoMapper;
 import ch.nexusnet.usermanager.aws.dynamodb.model.table.UserInfo;
 import ch.nexusnet.usermanager.aws.dynamodb.repositories.UserInfoRepository;
@@ -18,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openapitools.model.UpdateUser;
 import org.openapitools.model.User;
+import org.openapitools.model.UserSummary;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -65,6 +67,21 @@ class UserServiceTest {
         // assert
         assertNotNull(createdUser.getId());
     }
+
+    @ParameterizedTest
+    @MethodSource("getUsers")
+    void getUsers(User testUser) {
+        // arrange
+        when(userInfoRepositoryMock.findAll()).thenReturn(List.of(UserToUserInfoMapper.map(testUser)));
+
+        // act
+        List<UserSummary> users = userService.getUsers();
+
+        // assert
+        assertEquals(1, users.size());
+        assertEquals(UserInfoToUserSummaryMapper.map(UserToUserInfoMapper.map(testUser)).getId(), users.get(0).getId());
+    }
+
 
     @ParameterizedTest
     @MethodSource("getUsers")
@@ -153,6 +170,7 @@ class UserServiceTest {
         assertEquals(expectedUpdatedUser.getBio(), captor.getValue().getBio());
         assertEquals(expectedUpdatedUser.getDegreeProgram(), captor.getValue().getDegreeProgram());
         assertEquals(expectedUpdatedUser.getBirthday(), captor.getValue().getBirthday());
+        assertEquals(expectedUpdatedUser.getPrivateProfile(), captor.getValue().getPrivateProfile());
     }
 
     @Test
@@ -303,6 +321,7 @@ class UserServiceTest {
         updateUser.setBio("Master Student");
         updateUser.setDegreeProgram("AI");
         updateUser.setBirthday(LocalDate.of(2024, 3, 28));
+        updateUser.privateProfile(true);
         return updateUser;
     }
 
@@ -316,6 +335,7 @@ class UserServiceTest {
         expectedUpdatedUser.setBio(updateUser.getBio());
         expectedUpdatedUser.setDegreeProgram(updateUser.getDegreeProgram());
         expectedUpdatedUser.setBirthday(updateUser.getBirthday().toString());
+        expectedUpdatedUser.setPrivateProfile(updateUser.getPrivateProfile());
         return expectedUpdatedUser;
     }
 }

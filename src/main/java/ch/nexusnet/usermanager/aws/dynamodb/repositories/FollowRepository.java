@@ -10,5 +10,9 @@ import java.util.List;
 public interface FollowRepository extends
         CrudRepository<Follow, String> {
 
-    List<Follow> findByUserId(String userId);
+    List<Follow> findAllByUserId(String userId);
+
+    List<Follow> findAllByFollowsUserId(String followsUserId);
+
+    Follow findByUserIdAndFollowsUserId(String userId, String followsUserId);
 }

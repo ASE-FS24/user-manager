@@ -7,6 +7,19 @@ servers:
   - url: 'https://api.nexusnet.ch/v1'
 paths:
   /users:
+    get:
+      summary: Get all users
+      operationId: getUsers
+      responses:
+        '200':
+          description: Got all users successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserSummary'
+                description: Each item represents the summary of a user.
     post:
       summary: Create a new user profile
       operationId: createUser
@@ -212,6 +225,115 @@ paths:
         '404':
           description: User not found
 
+  /users/{userId}/follows/{followId}:
+    post:
+      summary: Create a follow for a userId
+      operationId: followUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: followId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Created follow for user successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "api/users/1234/follow/4321"
+        '404':
+          description: User not found
+    delete:
+      summary: Unfollow a user
+      operationId: unfollowUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: followId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Unfollowed user successfully
+        '404':
+          description: User not found
+
+
+  /users/{userId}/follows:
+    get:
+      summary: Get all follows of a user
+      operationId: getFollows
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of users that the user follows
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserSummary'
+                description: Each item represents the summary of a user.
+        '404':
+          description: User not found
+
+  /users/{userId}/followers:
+    get:
+      summary: Get all followers of a user
+      operationId: getFollowers
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of users that follow the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserSummary'
+                description: Each item represents the summary of a user.
+        '404':
+          description: User not found
+
+  /users/follows:
+    get:
+      summary: Get all follow connections
+      operationId: getAllFollows
+      responses:
+        '200':
+          description: List of user follows
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/UserSummary'
+
+
 components:
   schemas:
     User:
@@ -232,6 +354,10 @@ components:
           type: string
         username:
           type: string
+        email:
+          type: string
+        motto:
+          type: string
         university:
           type: string
         bio:
@@ -244,6 +370,8 @@ components:
         birthday:
           type: string
           format: date
+        privateProfile:
+          type: boolean
 
     UpdateUser:
       type: object
@@ -256,6 +384,10 @@ components:
           type: string
         university:
           type: string
+        email:
+          type: string
+        motto:
+          type: string
         bio:
           type: string
         degreeProgram:
@@ -263,3 +395,19 @@ components:
         birthday:
           type: string
           format: date
+        privateProfile:
+          type: boolean
+
+    UserSummary:
+      type: object
+      required:
+        - id
+        - username
+        - profilePicture
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        profilePicture:
+          type: string
