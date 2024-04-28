@@ -14,8 +14,8 @@ awslocal dynamodb create-table \
 
 awslocal dynamodb create-table \
     --table-name Follow \
-    --key-schema AttributeName=userId,KeyType=HASH \
-    --attribute-definitions AttributeName=userId,AttributeType=S \
+    --key-schema AttributeName=id,KeyType=HASH \
+    --attribute-definitions AttributeName=id,AttributeType=S \
     --billing-mode PAY_PER_REQUEST
 
 awslocal dynamodb list-tables
