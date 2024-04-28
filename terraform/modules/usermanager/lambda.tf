@@ -3,12 +3,12 @@ resource "aws_lambda_function" "usermanager_api" {
   function_name = "usermanager_api"
   environment {
     variables = {
-      AMAZON_ACCESS_KEY	= "AKIA2UC3FQUXL2TAFQHT"
+      AMAZON_ACCESS_KEY	= "${var.um_access_key}"
       AMAZON_DYNAMODB_ENDPOINT = 	"https://dynamodb.${var.um_aws_region}.amazonaws.com"
-      AMAZON_S3_ACCESS_KEY	= "AKIA2UC3FQUXL2TAFQHT"
+      AMAZON_S3_ACCESS_KEY	= "${var.um_access_key}"
       AMAZON_S3_ENDPOINT	= "https://${var.um_project_name}-${var.usermanager_name}.s3.${var.um_aws_region}.amazonaws.com/0.0.1/"
-      AMAZON_S3_SECRET_KEY	= "l66He4T6aepctykh2JQL4yB91A2M/iE54WQDaEN4"
-      AMAZON_SECRET_KEY	= "l66He4T6aepctykh2JQL4yB91A2M/iE54WQDaEN4"
+      AMAZON_S3_SECRET_KEY	= "${var.um_access_key}"
+      AMAZON_SECRET_KEY	= "${var.um_access_key}"
       AMAZON_USM_BUCKET	= "nexus-net-${var.usermanager_name}"
     }
   }

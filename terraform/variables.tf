@@ -13,6 +13,17 @@ variable "aws_region" {
   default = "us-east-1"  #eu-central-1
 }
 
+variable "aws_access_key" {
+  type        = string
+  description = "Sensitive access key"
+  sensitive   = true
+}
+
+variable "aws_secret_key" {
+  type        = string
+  description = "Sensitive secret key"
+  sensitive   = true
+}
 # variable "lambda_function_handler" {
 #   default = "ch.nexusnet.usermanager.aws.LambdaHandler::handleRequest"
 # }

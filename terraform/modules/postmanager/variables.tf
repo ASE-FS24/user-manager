@@ -32,3 +32,15 @@ variable "api_path" {
 variable "postmanager_jar" {
   default = "original-postmanager.jar"  
 }
+
+variable "pm_access_key" {
+  type        = string
+  description = "Sensitive access key"
+  sensitive   = true
+}
+
+variable "pm_secret_key" {
+  type        = string
+  description = "Sensitive secret key"
+  sensitive   = true
+}

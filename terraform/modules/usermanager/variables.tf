@@ -36,3 +36,15 @@ variable "usermanager_jar" {
 variable "build_folder" {
    default = "../../user-manager/build"
 }
+
+variable "um_access_key" {
+  type        = string
+  description = "Sensitive access key"
+  sensitive   = true
+}
+
+variable "um_secret_key" {
+  type        = string
+  description = "Sensitive secret key"
+  sensitive   = true
+}
