@@ -182,16 +182,17 @@ public class UserService {
         applyUpdate(updateUser.getBio(), userInfo::setBio);
         applyUpdate(updateUser.getDegreeProgram(), userInfo::setDegreeProgram);
         applyUpdate(updateUser.getBirthday(), birthday -> userInfo.setBirthday(birthday.toString()));
-    }
 
+        if (updateUser.getPrivateProfile() != null) {
+            userInfo.setPrivateProfile(updateUser.getPrivateProfile());
+        }
+    }
 
     private <T> void applyUpdate(T value, Consumer<T> updateFunction) {
         if (value != null) {
             updateFunction.accept(value);
         }
-        if (updateUser.getPrivateProfile() != null) {
-            userInfo.setPrivateProfile(updateUser.getPrivateProfile());
-        }
     }
+
 
 }
