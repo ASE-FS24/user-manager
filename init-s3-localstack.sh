@@ -4,7 +4,9 @@
 bucket_name="nexus-net-user-info-bucket"
 
 # Create the S3 bucket
-awslocal --endpoint-url=http://localhost:4566 s3 mb s3://$bucket_name
+aws s3 mb s3://$bucket_name
+
+aws s3 cp ./target/original-usermanager.jar s3://$bucket_name/usermanager.jar
 
 # List the contents of the S3 bucket
 awslocal --endpoint-url=http://localhost:4566 s3 ls s3://$bucket_name

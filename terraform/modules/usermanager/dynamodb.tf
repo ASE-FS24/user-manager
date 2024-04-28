@@ -27,6 +27,15 @@ resource "aws_dynamodb_table" "follow" {
   }
 }
 
+resource "aws_dynamodb_table" "posts" {
+  name              = "Posts"
+  billing_mode      = "PAY_PER_REQUEST"
+  hash_key          = "id"
+  attribute {
+    name = "id"
+    type = "S" 
+  }
+}
 
 ################## SAMPLE ###########################
 # resource "aws_dynamodb_table" "notes" {

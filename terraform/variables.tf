@@ -10,25 +10,37 @@ variable "deployment_number" {
 
 variable "aws_region" {
   type = string
-  default = "eu-central-1"
+  default = "us-east-1"  #eu-central-1
 }
 
-variable "lambda_function_handler" {
-  default = "ch.nexusnet.usermanager.aws.LambdaHandler::handleRequest"
-}
+# variable "lambda_function_handler" {
+#   default = "ch.nexusnet.usermanager.aws.LambdaHandler::handleRequest"
+# }
 
-variable "lambda_runtime" {
-  default = "java17"
-}
+# variable "lambda_runtime" {
+#   default = "java17"
+# }
 
-variable "api_path" {
-  default = "{proxy+}"
-}
+# variable "api_path" {
+#   default = "{proxy+}"
+# }
 
-variable "usermanager_jar" {
-  default = "original-usermanager.jar"  
-}
+# variable "usermanager_jar" {
+#   default = "original2-usermanager.jar"  
+# }
 
-variable "build_folder" {
-   default = "../../user-manager/build"
-}
+# variable "build_folder" {
+#    default = "../../user-manager/build"
+# }
+
+# variable "usermanager_name" {
+#    default = "usermanager"
+# }
+
+# variable "postmanager_name" {
+#    default = "postmanager"
+# }
+
+# variable "frontend_name" {
+#   default = "frontend"
+# }

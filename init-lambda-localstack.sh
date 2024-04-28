@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Create a Lambda function for a Spring Boot application
-awslocal --endpoint-url=http://localstack:4566 lambda create-function --function-name usermanager-lambda \
+aws lambda create-function --function-name usermanager-lambda \
   --handler ch.nexusnet.usermanager.aws.LambdaHandler::handleRequest \
   --runtime java17 \
   --role arn:aws:iam::123456789012:role/execution_role \
-  --package-type Image \
+  --package-type Zip \
   --code ImageUri=usermanager
 
 # URL of the website
@@ -16,3 +16,7 @@ message="Check your Lambda Functions here:"
 
 # Print the message and URL to the console
 echo "$message $website_url"
+
+aws lambda create-function --function-name lambda-direct \
+--zip-file fileb://./target/original-usermanager.jar --handler ch.nexusnet.usermanager.aws.LambdaHandler::handleRequest --runtime java17 \
+--role arn:aws:iam::730335642926:role/lambda-ex

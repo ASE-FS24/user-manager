@@ -1,3 +1,3 @@
-output "cloudfront_domain_name" {
-  value = aws_cloudfront_distribution.default.domain_name
+output "aws_region" {
+  value = var.aws_region
 }
