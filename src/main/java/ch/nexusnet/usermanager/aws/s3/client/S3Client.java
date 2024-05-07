@@ -26,8 +26,7 @@ public class S3Client {
     private static final String RESUME = "resume.pdf";
 
     private final S3ClientConfiguration s3ClientConfiguration;
-    @Value("${usermanager.aws.s3.bucket}")
-    private String bucketName;
+    private final String bucketName = System.getenv("AMAZON_USM_BUCKET");
 
     public URL uploadFileToS3(String userId , MultipartFile multipartFile) throws IOException, UnsupportedFileTypeException {
         AmazonS3 s3 = getS3Client();
