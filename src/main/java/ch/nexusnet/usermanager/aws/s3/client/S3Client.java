@@ -29,6 +29,16 @@ public class S3Client {
     @Value("${usermanager.aws.s3.bucket}")
     private String bucketName;
 
+
+    /**
+     * Uploads a file to S3. Takes a multipart file and a user id as input.
+     * jpeg's and pdf's are supported.
+     * @param userId The user id of the user who is uploading the file.
+     * @param multipartFile The file to be uploaded.
+     * @return The URL of the uploaded file.
+     * @throws IOException If an I/O error occurs.
+     * @throws UnsupportedFileTypeException If the file type is not supported.
+     */
     public URL uploadFileToS3(String userId , MultipartFile multipartFile) throws IOException, UnsupportedFileTypeException {
         AmazonS3 s3 = getS3Client();
 
@@ -50,6 +60,11 @@ public class S3Client {
         return s3.getUrl(bucketName, keyName);
     }
 
+    /**
+     * Gets the profile picture from S3.
+     * @param userid The user id of the user whose profile picture is to be retrieved.
+     * @return The URL of the profile picture.
+     */
     public URL getProfilePictureFromS3(String userid) {
         AmazonS3 s3 = getS3Client();
         String keyName = USER_FILE_PATH + userid + PROFILE_PICTURE;
@@ -61,6 +76,11 @@ public class S3Client {
 
     }
 
+    /**
+     * Gets the resume from S3.
+     * @param userid The user id of the user whose resume is to be retrieved.
+     * @return The URL of the resume.
+     */
     public URL getResumeFromS3(String userid) {
         AmazonS3 s3 = getS3Client();
         Date expiration = getExpirationDateForURL();

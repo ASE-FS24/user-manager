@@ -18,7 +18,6 @@ import org.openapitools.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.testcontainers.containers.GenericContainer;
@@ -31,8 +30,7 @@ import java.util.UUID;
 import java.util.stream.StreamSupport;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 
 /**
@@ -53,7 +51,6 @@ import static org.junit.Assert.assertTrue;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = UsermanagerApplication.class)
 @WebAppConfiguration
-@ActiveProfiles("local")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class UserInfoIntegrationTest {
     private DynamoDBMapper dynamoDBMapper;
@@ -141,6 +138,52 @@ public class UserInfoIntegrationTest {
                 .containsExactlyInAnyOrder(expected.get(0).getUsername(), expected.get(1).getUsername());
     }
 
+    @Test
+    public void updateUser_expectUpdatedInfo() {
+        // arrange
+        User testUser = getUserWithId();
+        UserInfo userInfo = UserToUserInfoMapper.map(testUser);
+        userInfoRepository.save(userInfo);
+
+        String updatedUsername = "updatedUsername";
+        userInfo.setUsername(updatedUsername);
+        userInfoRepository.save(userInfo);
+
+        // act
+        Optional<UserInfo> updatedResult = userInfoRepository.findById(testUser.getId().toString());
+
+        // assert
+        assertTrue(updatedResult.isPresent());
+        assertEquals(updatedResult.get().getUsername(), updatedUsername);
+    }
+
+    @Test
+    public void deleteUser_expectNoUserFound() {
+        // arrange
+        User testUser = getUserWithId();
+        UserInfo userInfo = UserToUserInfoMapper.map(testUser);
+        userInfoRepository.save(userInfo);
+
+        // act
+        userInfoRepository.delete(userInfo);
+        Optional<UserInfo> result = userInfoRepository.findById(testUser.getId().toString());
+
+        // assert
+        assertFalse(result.isPresent());
+    }
+
+    @Test
+    public void findAllUsersWhenEmpty_expectEmpty() {
+        // arrange
+        // No users added in this case
+
+        // act
+        List<UserInfo> result = StreamSupport.stream(userInfoRepository.findAll().spliterator(), false)
+                .toList();
+
+        // assert
+        assertTrue(result.isEmpty());
+    }
 
     private User getUserWithoutId() {
         User user = new User();
