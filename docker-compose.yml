@@ -18,7 +18,6 @@ services:
     volumes:
       - './:/etc/localstack/init/ready.d/' # Mount your project directory to automatically run scripts
       - '/var/run/docker.sock:/var/run/docker.sock' # Mount the Docker socket to allow LocalStack to manage Docker containers
-      - './target/usermanager.jar:/tmp/usermanager.jar' # Mount the jar file to be used by the lambda
     networks:
       - network
 
@@ -34,19 +33,6 @@ services:
       - amazon.aws.accesskey=key
       - amazon.aws.secretkey=key2
       - DYNAMODB_IN_MEMORY=1
-    networks:
-      - network
-
-  frontend:
-    build:
-      context: .
-      dockerfile: ./frontend/Dockerfile
-    ports:
-      - "3000:3000"
-    environment:
-      - amazon.s3.endpoint=http://localstack:4566/
-      - amazon.aws.accesskey=key
-      - amazon.aws.secretkey=key2
     networks:
       - network
 
