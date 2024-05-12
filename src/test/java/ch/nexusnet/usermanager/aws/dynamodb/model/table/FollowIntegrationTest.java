@@ -21,7 +21,10 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.List;
+import java.util.UUID;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -99,6 +102,7 @@ public class FollowIntegrationTest {
         Follow follow = new Follow();
         follow.setUserId(uuid);
         follow.setFollowsUserId(followId);
+        follow.setId(UUID.randomUUID().toString());
 
         followRepository.save(follow);
 
@@ -113,6 +117,7 @@ public class FollowIntegrationTest {
         String uuid = "de005d7c-f36f-4342-9c2c-380b1815b499";
         String followId = "11111";
         Follow follow = new Follow();
+        follow.setId(UUID.randomUUID().toString());
         follow.setUserId(uuid);
         follow.setFollowsUserId(followId);
 
@@ -122,6 +127,123 @@ public class FollowIntegrationTest {
 
         assertEquals(1, result.size());
         assertEquals(result.get(0).getFollowsUserId(), followId);
+    }
+
+    @Test
+    public void multipleFollowsBySingleUser_expectSuccess() {
+        String userId = UUID.randomUUID().toString();
+        String followId1 = UUID.randomUUID().toString();
+        String followId2 = UUID.randomUUID().toString();
+
+        Follow follow1 = new Follow();
+        Follow follow2 = new Follow();
+        follow1.setId(UUID.randomUUID().toString());
+        follow1.setUserId(userId);
+        follow1.setFollowsUserId(followId1);
+        follow2.setId(UUID.randomUUID().toString());
+        follow2.setUserId(userId);
+        follow2.setFollowsUserId(followId2);
+
+        followRepository.save(follow1);
+        followRepository.save(follow2);
+
+        List<Follow> results = followRepository.findAllByUserId(userId);
+
+        assertEquals(2, results.size());
+        assertTrue(results.stream().anyMatch(f -> f.getFollowsUserId().equals(followId1)));
+        assertTrue(results.stream().anyMatch(f -> f.getFollowsUserId().equals(followId2)));
+    }
+
+    @Test
+    public void multipleUsersFollowingSingleUser_expectSuccess() {
+        String followId = UUID.randomUUID().toString();
+        String userId1 = UUID.randomUUID().toString();
+        String userId2 = UUID.randomUUID().toString();
+
+        Follow follow1 = new Follow();
+        Follow follow2 = new Follow();
+        follow1.setId(UUID.randomUUID().toString());
+        follow1.setUserId(userId1);
+        follow1.setFollowsUserId(followId);
+        follow2.setId(UUID.randomUUID().toString());
+        follow2.setUserId(userId2);
+        follow2.setFollowsUserId(followId);
+
+        followRepository.save(follow1);
+        followRepository.save(follow2);
+
+        List<Follow> results = followRepository.findAllByFollowsUserId(followId);
+
+        assertEquals(2, results.size());
+        assertTrue(results.stream().anyMatch(f -> f.getUserId().equals(userId1)));
+        assertTrue(results.stream().anyMatch(f -> f.getUserId().equals(userId2)));
+    }
+
+    @Test
+    public void unfollowUser_expectRemovedFromFollows() {
+        String userId = UUID.randomUUID().toString();
+        String followId = UUID.randomUUID().toString();
+
+        Follow follow = new Follow();
+        follow.setUserId(userId);
+        follow.setFollowsUserId(followId);
+        follow.setId(UUID.randomUUID().toString());
+        followRepository.save(follow);
+
+        // Unfollow operation
+        followRepository.delete(follow);
+        List<Follow> results = followRepository.findAllByUserId(userId);
+
+        assertTrue(results.isEmpty());
+    }
+
+    @Test
+    public void followNonexistentUser_expectEmptyResult() {
+        String userId = UUID.randomUUID().toString();
+        String nonExistentUserId = UUID.randomUUID().toString();
+
+        Follow follow = new Follow();
+        follow.setUserId(userId);
+        follow.setFollowsUserId(nonExistentUserId);
+        follow.setId(UUID.randomUUID().toString());
+        followRepository.save(follow);
+
+        // Attempt to find follows for a non-existent user
+        List<Follow> results = followRepository.findAllByFollowsUserId(nonExistentUserId);
+
+        assertFalse(results.isEmpty());
+        assertEquals(nonExistentUserId, results.get(0).getFollowsUserId());
+    }
+
+    @Test
+    public void concurrentFollowAndUnfollow_expectConsistentState() throws InterruptedException {
+        String userId = UUID.randomUUID().toString();
+        String followId = UUID.randomUUID().toString();
+
+        Follow follow = new Follow();
+        follow.setUserId(userId);
+        follow.setFollowsUserId(followId);
+        follow.setId(UUID.randomUUID().toString());
+        followRepository.save(follow);
+
+        Follow newFollow = new Follow();
+        newFollow.setUserId(userId);
+        newFollow.setFollowsUserId(followId);
+        newFollow.setId(UUID.randomUUID().toString());
+
+        // Simulate concurrent operations
+        Thread thread1 = new Thread(() -> followRepository.delete(follow));
+        Thread thread2 = new Thread(() -> followRepository.save(newFollow));
+        thread1.start();
+        thread2.start();
+        thread1.join();
+        thread2.join();
+
+        List<Follow> results = followRepository.findAllByUserId(userId);
+
+        // Expect consistent result
+        assertEquals(1, results.size());
+        assertEquals(followId, results.get(0).getFollowsUserId());
     }
 
 }

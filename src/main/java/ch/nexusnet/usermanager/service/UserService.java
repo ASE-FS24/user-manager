@@ -34,11 +34,21 @@ public class UserService {
     private final UserInfoRepository userInfoRepository;
     private final S3Client s3Client;
 
+    /**
+     * Returns a list of all users in the database.
+     * @return List<UserSummary> A list of all users in the database.
+     */
     public List<UserSummary> getUsers() {
         Iterable<UserInfo> userInfos = userInfoRepository.findAll();
         return getUserSummariesFromUserInfos(userInfos);
     }
 
+    /**
+     * Creates a new user.
+     * @param newUser The user to be created.
+     * @return User The created user.
+     * @throws UserAlreadyExistsException if the user already exists.
+     */
     public User createUser(User newUser) throws UserAlreadyExistsException {
         if (newUser.getId() == null) {
             newUser.setId(UUID.randomUUID());
@@ -54,11 +64,23 @@ public class UserService {
         throw new UserAlreadyExistsException(userInformationMessage);
     }
 
+    /**
+     * Returns a user by user id.
+     * @param userId The user id of the user to be returned.
+     * @return User The user with the given user id.
+     * @throws UserNotFoundException if the user does not exist.
+     */
     public User getUserByUserId(String userId) throws UserNotFoundException {
         UserInfo userInfo = findUserById(userId);
         return mapUserInfoToUser(userInfo);
     }
 
+    /**
+     * Returns a user by username.
+     * @param username The username of the user to be returned.
+     * @return User The user with the given username.
+     * @throws UserNotFoundException if the user does not exist.
+     */
     public User getUserByUsername(String username) throws UserNotFoundException {
         Optional<UserInfo> userInfo = findUserByUsername(username);
         if (userInfo.isPresent()) {
@@ -69,22 +91,49 @@ public class UserService {
         throw new UserNotFoundException(userInformationMessage);
     }
 
+    /**
+     * Updates information about a user.
+     * @param userId The user id of the user to be updated.
+     * @param updateUser The updated user information.
+     * @throws UserNotFoundException if the user does not exist.
+     */
     public void updateUser(String userId, UpdateUser updateUser) throws UserNotFoundException {
         UserInfo userInfo = findUserById(userId);
         updateUserInfo(updateUser, userInfo);
         saveUserToDB(mapUserInfoToUser(userInfo));
     }
 
+    /**
+     * Deletes a user by user id.
+     * @param userId The user id of the user to be deleted.
+     * @throws UserNotFoundException if the user does not exist.
+     */
     public void deleteUser(String userId) throws UserNotFoundException {
         throwExceptionIfUserDoesNotExist(userId);
         userInfoRepository.deleteById(userId);
     }
 
+    /**
+     * Uploads a file to S3.
+     * @param userId The user id of the user uploading the file.
+     * @param multipartFile The file to be uploaded.
+     * @return URL The URL of the uploaded file.
+     * @throws IOException If an I/O error occurs.
+     * @throws UnsupportedFileTypeException If the file type is not supported.
+     * @throws UserNotFoundException If the user does not exist.
+     */
     public URL uploadFile(String userId, MultipartFile  multipartFile) throws IOException, UnsupportedFileTypeException, UserNotFoundException {
         throwExceptionIfUserDoesNotExist(userId);
         return s3Client.uploadFileToS3(userId, multipartFile);
     }
 
+    /**
+     * Gets the profile picture of a user.
+     * @param userId The user id of the user whose profile picture is to be returned.
+     * @return URL The URL of the profile picture.
+     * @throws UserNotFoundException If the user does not exist.
+     * @throws FileDoesNotExistException If the file does not exist.
+     */
     public URL getProfilePicture(String userId) throws UserNotFoundException, FileDoesNotExistException {
         throwExceptionIfUserDoesNotExist(userId);
         URL profilePicturePath = s3Client.getProfilePictureFromS3(userId);
@@ -92,6 +141,13 @@ public class UserService {
         return profilePicturePath;
     }
 
+    /**
+     * Gets the resume of a user.
+     * @param userId The user id of the user whose resume is to be returned.
+     * @return URL The URL of the resume.
+     * @throws UserNotFoundException If the user does not exist.
+     * @throws FileDoesNotExistException If the file does not exist.
+     */
     public URL getResume(String userId) throws UserNotFoundException, FileDoesNotExistException {
         throwExceptionIfUserDoesNotExist(userId);
         URL resumePath = s3Client.getResumeFromS3(userId);

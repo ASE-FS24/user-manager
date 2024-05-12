@@ -29,6 +29,10 @@ public class FollowService {
     private final UserInfoRepository userInfoRepository;
     private final UserService userService;
 
+    /**
+     * Returns a list of all follows in the database.
+     * @return A list of all follows in the database.
+     */
     public List<List<UserSummary>> getAllFollows() {
         List<List<UserSummary>> userSummaries = new ArrayList<>();
 
@@ -43,6 +47,13 @@ public class FollowService {
         return userSummaries;
     }
 
+    /**
+     * Follows a user.
+     * @param userId The user ID of the user who wants to follow another user.
+     * @param followsUserId The user ID of the user who will be followed.
+     * @return Follow The follow object that was created.
+     * @throws UserNotFoundException If the user does not exist.
+     */
     public Follow followUser(String userId, String followsUserId) throws UserNotFoundException {
         throwExceptionIfUserDoesNotExist(userId);
         throwExceptionIfUserDoesNotExist(followsUserId);
@@ -53,6 +64,11 @@ public class FollowService {
         return followRepository.save(follow);
     }
 
+    /**
+     * Unfollows a user.
+     * @param userId The user ID of the user who wants to unfollow another user.
+     * @param followsUserId The user ID of the user who will be unfollowed.
+     */
     public void unfollowUser(String userId, String followsUserId) {
         Follow follow = followRepository.findByUserIdAndFollowsUserId(userId, followsUserId);
         if (follow != null) {
@@ -60,11 +76,21 @@ public class FollowService {
         }
     }
 
+    /**
+     * Returns a list of all users that a user follows.
+     * @param userId The user ID of the user.
+     * @return List<UserSummary> A list of all users that a user follows.
+     */
     public List<UserSummary> getFollows(String userId) {
         List<Follow> followIds = followRepository.findAllByUserId(userId);
         return getUserSummariesForFollows(followIds);
     }
 
+    /**
+     * Returns a list of all users that follow a user.
+     * @param userId The user ID of the user.
+     * @return List<UserSummary> A list of all users that follow a user.
+     */
     public List<UserSummary> getFollowers(String userId) {
         List<Follow> followIds = followRepository.findAllByFollowsUserId(userId);
         return getUserSummariesForFollowers(followIds);
